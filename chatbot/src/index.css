@@ -1,15 +1,4 @@
 @import "tailwindcss";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
-@import "tailwindcss/base";
-@import "tailwindcss/forms";
-@import "tailwindcss/typography";
-@import "tailwindcss/aspect-ratio";
-@import "tailwindcss/line-clamp";
-@import "tailwindcss/scroll-snap";
-@import "tailwindcss/typography";
-@import "tailwindcss/animation";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
