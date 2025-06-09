@@ -2,18 +2,52 @@ import { LogIn, LogOut, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const isAuthenticated = !!localStorage.getItem("token");
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const [userData, setUserData] = useState<{ name: string; email: string; picture?: string } | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // ✅ Load user data on component mount
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error("Failed to parse user data");
+        localStorage.removeItem("user"); // Clear corrupted data
+      }
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8000/logout", {
+        method: 'POST',
+        credentials: 'include',
+      });
+      console.log("Logged out successfully");
+    } catch (err) {
+      console.log("Logout endpoint not available");
+    }
+    
+    // Clear local storage and state
+    localStorage.removeItem('user');
+    setUserData(null);
+    setIsAuthenticated(false);
     navigate("/login");
   };
 
   const handleLogin = () => {
     navigate("/login");
+  };
+
+  const handleStartChat = () => {
+    navigate("/chat");
   };
 
   return (
@@ -28,14 +62,38 @@ const HomePage = () => {
         </div>
 
         {isAuthenticated ? (
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-4">
+            {/* ✅ Profile Section with Picture and Name */}
+            <div className="flex items-center gap-3">
+              {userData?.picture ? (
+                <img
+                  src={userData.picture}
+                  alt={userData.name || "Profile"}
+                  className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                  onError={(e) => {
+                    // Fallback to default avatar if image fails to load
+                    e.currentTarget.src = "https://via.placeholder.com/32x32/6366f1/ffffff?text=" + (userData?.name?.charAt(0) || "U");
+                  }}
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  {userData?.name?.charAt(0)?.toUpperCase() || "U"}
+                </div>
+              )}
+              <span className="text-sm text-slate-700 font-medium">
+                {userData?.name || "User"}
+              </span>
+            </div>
+            
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
         ) : (
           <Button
             variant="outline"
@@ -58,14 +116,66 @@ const HomePage = () => {
                 <MessageCircle className="w-8 h-8 text-white" />
               </div>
             </div>
+            
+            {/* ✅ Personalized Welcome Message */}
             <h2 className="text-4xl font-bold text-slate-800 mb-4">
-              Welcome to Your AI Assistant
+              {isAuthenticated 
+                ? `Welcome back, ${userData?.name?.split(' ')[0] || 'User'}!` 
+                : "Welcome to Your AI Assistant"
+              }
             </h2>
+            
             <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Start a conversation and let our AI help you with anything you
-              need. Ask questions, get creative, or just have a chat.
+              {isAuthenticated
+                ? "Ready to continue our conversation? Ask me anything you need help with!"
+                : "Start a conversation and let our AI help you with anything you need. Ask questions, get creative, or just have a chat."
+              }
             </p>
+
+            {/* ✅ Start Chat Button for Authenticated Users */}
+            {isAuthenticated && (
+              <Button
+                onClick={handleStartChat}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Start Chatting
+              </Button>
+            )}
           </div>
+
+          {/* ✅ User Profile Card for Authenticated Users */}
+          {isAuthenticated && userData && (
+            <div className="max-w-md mx-auto mb-12">
+              <Card className="p-6 shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                <div className="flex items-center space-x-4">
+                  {userData.picture ? (
+                    <img
+                      src={userData.picture}
+                      alt={userData.name}
+                      className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/64x64/6366f1/ffffff?text=" + (userData.name?.charAt(0) || "U");
+                      }}
+                    />
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                      {userData.name?.charAt(0)?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-slate-800">{userData.name}</h3>
+                    <p className="text-sm text-slate-600">{userData.email}</p>
+                    <div className="mt-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ● Online
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
 
           {/* Chat Preview */}
           <div className="max-w-2xl mx-auto">
@@ -78,7 +188,10 @@ const HomePage = () => {
                   </div>
                   <div className="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs">
                     <p className="text-slate-700">
-                      Hello! I'm your AI assistant. How can I help you today?
+                      {isAuthenticated 
+                        ? `Hello ${userData?.name?.split(' ')[0] || 'there'}! I'm your AI assistant. How can I help you today?`
+                        : "Hello! I'm your AI assistant. How can I help you today?"
+                      }
                     </p>
                   </div>
                 </div>
@@ -88,9 +201,17 @@ const HomePage = () => {
                     <p>Can you help me brainstorm some ideas?</p>
                   </div>
                   <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-medium text-slate-600">
-                      You
-                    </span>
+                    {isAuthenticated && userData?.picture ? (
+                      <img
+                        src={userData.picture}
+                        alt="You"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs font-medium text-slate-600">
+                        You
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -116,8 +237,9 @@ const HomePage = () => {
                   <Button
                     size="sm"
                     className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    onClick={isAuthenticated ? handleStartChat : handleLogin}
                   >
-                    Send
+                    {isAuthenticated ? "Send" : "Sign In"}
                   </Button>
                 </div>
               </div>

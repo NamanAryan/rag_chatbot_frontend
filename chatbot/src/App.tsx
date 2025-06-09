@@ -4,12 +4,14 @@ import Home from "./components/Pages/HomePage";
 import Login from "./components/Pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ChatBot from "./components/Pages/ChatBot";
+import AuthRedirect from "./components/Pages/AuthRedirect";
 export default function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/google" element={<AuthRedirect />} />
         {/* Redirect root path to home */}
         <Route
           path="/"
@@ -32,7 +34,7 @@ export default function App() {
 
         {/* Protected route */}
         <Route
-          path="/"
+          path="/chat"
           element={
             <ProtectedRoute>
               <ChatBot />
