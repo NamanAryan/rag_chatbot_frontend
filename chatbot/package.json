@@ -21,10 +21,12 @@
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "tailwind-merge": "^3.3.0",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss": "^4.1.8",
+    "vite-plugin-svgr": "^4.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@tailwindcss/cli": "^4.1.8",
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

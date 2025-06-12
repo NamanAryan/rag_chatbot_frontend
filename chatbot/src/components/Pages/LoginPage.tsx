@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { User, Loader2, Sparkles } from "lucide-react"
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export default function GoogleLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -86,13 +87,13 @@ export default function GoogleLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="flex items-center justify-between p-6 border-b bg-white/50 backdrop-blur-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <header className="flex items-center justify-between p-6 border-b bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-800">AI Assistant</h1>
+          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-200">AI Assistant</h1>
         </div>
         {isLoggedIn && (
           <Button 
@@ -104,18 +105,19 @@ export default function GoogleLoginPage() {
             Sign Out
           </Button>
         )}
+        <DarkModeToggle />
       </header>
 
       <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-88px)]">
-        <Card className="w-full max-w-md shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+        <Card className="w-full max-w-md shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <User className="w-8 h-8 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-800">
+            <CardTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
               {isLoggedIn ? 'Welcome back!' : 'Sign in to continue'}
             </CardTitle>
-            <p className="text-slate-600">
+            <p className="text-slate-600 dark:text-slate-400">
               {isLoggedIn ? 'You are successfully signed in' : 'Access your AI assistant with Google'}
             </p>
           </CardHeader>
