@@ -13,20 +13,36 @@ const HomePage = () => {
     picture?: string;
   } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ✅ Add loading state
+  const [profileImageLoaded, setProfileImageLoaded] = useState(false); // ✅ Track image loading
 
-  // ✅ Load user data on component mount
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
+    const loadUserData = async () => {
       try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-        setIsAuthenticated(true);
+        setIsLoading(true);
+        const user = localStorage.getItem("user");
+        if (user) {
+          const parsedUser = JSON.parse(user);
+          setUserData(parsedUser);
+          setIsAuthenticated(true);
+          
+          // Pre-load profile image if it exists
+          if (parsedUser.picture) {
+            const img = new Image();
+            img.onload = () => setProfileImageLoaded(true);
+            img.onerror = () => setProfileImageLoaded(false);
+            img.src = parsedUser.picture;
+          }
+        }
       } catch (err) {
         console.error("Failed to parse user data");
-        localStorage.removeItem("user"); // Clear corrupted data
+        localStorage.removeItem("user");
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadUserData();
   }, []);
 
   const handleLogout = async () => {
@@ -40,10 +56,10 @@ const HomePage = () => {
       console.log("Logout endpoint not available");
     }
 
-    // Clear local storage and state
     localStorage.removeItem("user");
     setUserData(null);
     setIsAuthenticated(false);
+    setProfileImageLoaded(false);
     navigate("/login");
   };
 
@@ -53,6 +69,32 @@ const HomePage = () => {
 
   const handleStartChat = () => {
     navigate("/chat");
+  };
+
+  // ✅ Profile Avatar Component
+  const ProfileAvatar = ({ size = "w-8 h-8", textSize = "text-sm" }) => {
+    if (isLoading) {
+      return (
+        <div className={`${size} bg-slate-200 dark:bg-slate-600 rounded-full animate-pulse`}></div>
+      );
+    }
+
+    if (userData?.picture && profileImageLoaded) {
+      return (
+        <img
+          src={userData.picture}
+          alt={userData.name || "Profile"}
+          className={`${size} rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm`}
+          referrerPolicy="no-referrer"
+        />
+      );
+    }
+
+    return (
+      <div className={`${size} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white ${textSize} font-medium`}>
+        {userData?.name?.charAt(0)?.toUpperCase() || "U"}
+      </div>
+    );
   };
 
   return (
@@ -68,27 +110,19 @@ const HomePage = () => {
           </h1>
         </div>
 
-        {isAuthenticated ? (
+        {isLoading ? (
+          // ✅ Loading skeleton for header
           <div className="flex items-center gap-4">
-            {/* Profile Section with Picture and Name */}
             <div className="flex items-center gap-3">
-              {userData?.picture ? (
-                <img
-                  src={userData.picture}
-                  alt={userData.name || "Profile"}
-                  className="w-8 h-8 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm"
-                  onError={(e) => {
-                    // Fallback to default avatar if image fails to load
-                    e.currentTarget.src =
-                      "https://via.placeholder.com/32x32/6366f1/ffffff?text=" +
-                      (userData?.name?.charAt(0) || "U");
-                  }}
-                />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                  {userData?.name?.charAt(0)?.toUpperCase() || "U"}
-                </div>
-              )}
+              <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full animate-pulse"></div>
+              <div className="w-20 h-4 bg-slate-200 dark:bg-slate-600 rounded animate-pulse"></div>
+            </div>
+            <div className="w-20 h-9 bg-slate-200 dark:bg-slate-600 rounded animate-pulse"></div>
+          </div>
+        ) : isAuthenticated ? (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <ProfileAvatar />
               <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                 {userData?.name || "User"}
               </span>
@@ -127,21 +161,30 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Personalized Welcome Message */}
             <h2 className="text-4xl font-bold text-slate-800 dark:text-slate-200 mb-4">
-              {isAuthenticated
-                ? `Welcome back, ${userData?.name?.split(" ")[0] || "User"}!`
-                : "Welcome to Your AI Assistant"}
+              {isLoading ? (
+                <div className="w-96 h-10 bg-slate-200 dark:bg-slate-600 rounded animate-pulse mx-auto"></div>
+              ) : isAuthenticated ? (
+                `Welcome back, ${userData?.name?.split(" ")[0] || "User"}!`
+              ) : (
+                "Welcome to Your AI Assistant"
+              )}
             </h2>
 
             <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto leading-relaxed">
-              {isAuthenticated
-                ? "Ready to continue our conversation? Ask me anything you need help with!"
-                : "Start a conversation and let our AI help you with anything you need. Ask questions, get creative, or just have a chat."}
+              {isLoading ? (
+                <div className="space-y-2">
+                  <div className="w-full h-6 bg-slate-200 dark:bg-slate-600 rounded animate-pulse"></div>
+                  <div className="w-3/4 h-6 bg-slate-200 dark:bg-slate-600 rounded animate-pulse mx-auto"></div>
+                </div>
+              ) : isAuthenticated ? (
+                "Ready to continue our conversation? Ask me anything you need help with!"
+              ) : (
+                "Start a conversation and let our AI help you with anything you need. Ask questions, get creative, or just have a chat."
+              )}
             </p>
 
-            {/* Start Chat Button for Authenticated Users */}
-            {isAuthenticated && (
+            {!isLoading && isAuthenticated && (
               <Button
                 onClick={handleStartChat}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all"
@@ -152,26 +195,12 @@ const HomePage = () => {
             )}
           </div>
 
-          {isAuthenticated && userData && (
+          {/* User Profile Card */}
+          {!isLoading && isAuthenticated && userData && (
             <div className="max-w-md mx-auto mb-12">
               <Card className="p-6 shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
                 <div className="flex items-center space-x-4">
-                  {userData.picture ? (
-                    <img
-                      src={userData.picture}
-                      alt={userData.name}
-                      className="w-16 h-16 rounded-full object-cover border-4 border-white dark:border-slate-600 shadow-lg"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://via.placeholder.com/64x64/6366f1/ffffff?text=" +
-                          (userData.name?.charAt(0) || "U");
-                      }}
-                    />
-                  ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                      {userData.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
-                  )}
+                  <ProfileAvatar size="w-16 h-16" textSize="text-xl" />
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                       {userData.name}
@@ -194,18 +223,19 @@ const HomePage = () => {
           <div className="max-w-2xl mx-auto">
             <Card className="p-6 shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
               <div className="space-y-4">
-                {/* Sample Messages */}
                 <div className="flex gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs">
                     <p className="text-slate-700 dark:text-slate-200">
-                      {isAuthenticated
-                        ? `Hello ${
-                            userData?.name?.split(" ")[0] || "there"
-                          }! I'm your AI assistant. How can I help you today?`
-                        : "Hello! I'm your AI assistant. How can I help you today?"}
+                      {isLoading ? (
+                        <div className="w-48 h-4 bg-slate-200 dark:bg-slate-600 rounded animate-pulse"></div>
+                      ) : isAuthenticated ? (
+                        `Hello ${userData?.name?.split(" ")[0] || "there"}! I'm your AI assistant. How can I help you today?`
+                      ) : (
+                        "Hello! I'm your AI assistant. How can I help you today?"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -215,12 +245,8 @@ const HomePage = () => {
                     <p>Can you help me brainstorm some ideas?</p>
                   </div>
                   <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    {isAuthenticated && userData?.picture ? (
-                      <img
-                        src={userData.picture}
-                        alt="You"
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
+                    {!isLoading && isAuthenticated ? (
+                      <ProfileAvatar />
                     ) : (
                       <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
                         You
@@ -235,14 +261,12 @@ const HomePage = () => {
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 max-w-sm">
                     <p className="text-slate-700 dark:text-slate-200">
-                      Absolutely! I'd love to help you brainstorm. What topic or
-                      area are you looking to explore?
+                      Absolutely! I'd love to help you brainstorm. What topic or area are you looking to explore?
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Chat Input Preview */}
               <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex gap-3 items-center">
                   <div className="flex-1 bg-slate-50 dark:bg-slate-700 rounded-full px-4 py-3 text-slate-500 dark:text-slate-400">
@@ -252,8 +276,9 @@ const HomePage = () => {
                     size="sm"
                     className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                     onClick={isAuthenticated ? handleStartChat : handleLogin}
+                    disabled={isLoading}
                   >
-                    {isAuthenticated ? "Send" : "Sign In"}
+                    {isLoading ? "..." : isAuthenticated ? "Send" : "Sign In"}
                   </Button>
                 </div>
               </div>
@@ -270,8 +295,7 @@ const HomePage = () => {
                 Natural Conversations
               </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Chat naturally and get intelligent responses tailored to your
-                needs.
+                Chat naturally and get intelligent responses tailored to your needs.
               </p>
             </Card>
 
@@ -295,8 +319,7 @@ const HomePage = () => {
                 Always Available
               </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Your AI assistant is ready to help you 24/7, whenever you need
-                it.
+                Your AI assistant is ready to help you 24/7, whenever you need it.
               </p>
             </Card>
           </div>
