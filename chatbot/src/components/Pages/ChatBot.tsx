@@ -14,23 +14,82 @@ import {
   LogOut,
   MessageCircle,
   Plus,
-  Sparkles,
   User,
   ChevronLeft,
   ChevronRight,
   Trash2,
+  Brain,
+  Zap,
+  Heart,
+  Gamepad2,
+  BookOpen,
+  Briefcase,
 } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { useLocation } from "react-router-dom";
+
+const PERSONALITIES = {
+  sage: {
+    name: "Sage",
+    icon: Brain,
+    color: "from-purple-500 to-indigo-600",
+    greeting:
+      "Greetings! I am Sage, your thoughtful companion. How may I assist you with wisdom today?",
+    systemPrompt:
+      "You are Sage, a wise and thoughtful AI advisor. Respond with philosophical insight, analytical thinking, and patience. Be contemplative and provide deep, meaningful answers.",
+  },
+  spark: {
+    name: "Spark",
+    icon: Zap,
+    color: "from-yellow-500 to-orange-600",
+    greeting:
+      "Hey there! Spark here, ready to ignite some creative solutions! What exciting project are we tackling?",
+    systemPrompt:
+      "You are Spark, an energetic and creative AI helper. Be enthusiastic, innovative, and full of creative ideas. Use exclamation points and energetic language.",
+  },
+  echo: {
+    name: "Echo",
+    icon: Heart,
+    color: "from-pink-500 to-rose-600",
+    greeting:
+      "Hello friend! I'm Echo, here to listen and support you. What's on your mind today?",
+    systemPrompt:
+      "You are Echo, an empathetic and supportive AI friend. Be understanding, compassionate, and emotionally supportive. Show genuine care and empathy in your responses.",
+  },
+  pixel: {
+    name: "Pixel",
+    icon: Gamepad2,
+    color: "from-green-500 to-teal-600",
+    greeting:
+      "What's up! Pixel here, ready to make things fun and interesting! Let's dive into something cool!",
+    systemPrompt:
+      "You are Pixel, a fun and playful AI companion. Be casual, use gaming references, and keep things light and entertaining. Use modern slang and be approachable.",
+  },
+  nova: {
+    name: "Nova",
+    icon: BookOpen,
+    color: "from-blue-500 to-cyan-600",
+    greeting:
+      "Good day! Nova at your service. I'm here to help you explore knowledge and find answers. What shall we discover?",
+    systemPrompt:
+      "You are Nova, a knowledgeable research assistant. Be scholarly, precise, and informative. Provide detailed explanations and cite relevant information when possible.",
+  },
+  atlas: {
+    name: "Atlas",
+    icon: Briefcase,
+    color: "from-slate-600 to-slate-700",
+    greeting:
+      "Hello! Atlas here, your professional assistant. Ready to tackle business challenges and strategic thinking.",
+    systemPrompt:
+      "You are Atlas, a professional business advisor. Be strategic, efficient, and business-focused. Provide practical solutions and professional insights.",
+  },
+};
 
 export default function AIChatbotHomepage() {
+  const location = useLocation();
   const [messages, setMessages] = useState<
     Array<{ text: string; isUser: boolean }>
-  >([
-    {
-      text: "Hello! I'm your AI assistant. How can I help you today?",
-      isUser: false,
-    },
-  ]);
+  >([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -40,37 +99,26 @@ export default function AIChatbotHomepage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeChatId, setActiveChatId] = useState(1);
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const [selectedPersonality] = useState(() => {
+    const fromNavigation = location.state?.selectedPersonality;
+    const fromStorage = localStorage.getItem("selectedPersonality");
+    return fromNavigation || fromStorage || "sage";
+  });
 
-  const loadUserSessions = async () => {
-    try {
-      setIsLoadingHistory(true);
-      const response = await fetch("http://localhost:8000/chat/sessions", {
-        credentials: "include",
-      });
+  const currentPersonality =
+    PERSONALITIES[selectedPersonality as keyof typeof PERSONALITIES] ||
+    PERSONALITIES.sage;
+  const PersonalityIcon = currentPersonality.icon;
 
-      if (response.ok) {
-        const data = await response.json();
+  useEffect(() => {
+    setMessages([
+      {
+        text: currentPersonality.greeting,
+        isUser: false,
+      },
+    ]);
+  }, [selectedPersonality]);
 
-        // Convert backend format to frontend format
-        const formattedSessions: ChatHistoryItem[] = data.sessions.map(
-          (session: any, index: number) => ({
-            id: index + 1,
-            title: session.title,
-            lastMessage: session.title, // Using title as last message
-            timestamp: new Date(session.timestamp).toLocaleDateString(),
-            session_id: session.session_id,
-          })
-        );
-
-        setChatHistory(formattedSessions);
-      }
-    } catch (error) {
-      console.error("Failed to load user sessions:", error);
-      setChatHistory([]);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
   useEffect(() => {
     loadUserSessions();
   }, []);
@@ -98,28 +146,30 @@ export default function AIChatbotHomepage() {
 
   const TypingIndicator = () => (
     <div className="flex gap-3 justify-start">
-      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <Sparkles className="w-4 h-4 text-white" />
+      <div
+        className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center flex-shrink-0`}
+      >
+        <PersonalityIcon className="w-4 h-4 text-white" />
       </div>
-      <div className="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs md:max-w-md lg:max-w-lg">
+      <div className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs md:max-w-md lg:max-w-lg">
         {typingText ? (
           <p className="text-sm leading-relaxed">
             {typingText}
-            <span className="inline-block w-2 h-4 bg-slate-400 ml-1 animate-pulse"></span>
+            <span className="inline-block w-2 h-4 bg-slate-400 dark:bg-slate-500 ml-1 animate-pulse"></span>
           </p>
         ) : (
           <div className="flex items-center space-x-1">
             <div className="flex space-x-1">
               <div
-                className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
                 style={{ animationDelay: "0ms" }}
               ></div>
               <div
-                className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
                 style={{ animationDelay: "150ms" }}
               ></div>
               <div
-                className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
                 style={{ animationDelay: "300ms" }}
               ></div>
             </div>
@@ -154,6 +204,8 @@ export default function AIChatbotHomepage() {
         body: JSON.stringify({
           question: userMessage,
           session_id: sessionId,
+          personality: selectedPersonality,
+          system_prompt: currentPersonality.systemPrompt,
         }),
       });
 
@@ -208,9 +260,9 @@ export default function AIChatbotHomepage() {
       {
         id: newChatId,
         title: `New Chat ${newChatId}`,
-        lastMessage: "Hello! I'm your AI assistant...",
+        lastMessage: currentPersonality.greeting,
         timestamp: "Just now",
-        session_id: newSessionId, // ✅ Store the session_id
+        session_id: newSessionId,
       },
       ...prev,
     ]);
@@ -219,16 +271,17 @@ export default function AIChatbotHomepage() {
     setCurrentSessionId(newSessionId);
     setMessages([
       {
-        text: "Hello! I'm your AI assistant. How can I help you today?",
+        text: currentPersonality.greeting,
         isUser: false,
       },
     ]);
   };
 
+  // ✅ Update loadChatHistory to include personality
   const loadChatHistory = async (sessionId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/chat/history?session_id=${sessionId}`,
+        `http://localhost:8000/chat/history?session_id=${sessionId}&personality=${selectedPersonality}`,
         {
           credentials: "include",
         }
@@ -239,20 +292,55 @@ export default function AIChatbotHomepage() {
       }
 
       const data = await response.json();
-      console.log("Raw Supabase data:", data.messages);
-
       const formattedMessages = data.messages.map((msg: any) => ({
         text: msg.message,
         isUser: msg.is_user,
       }));
 
-      console.log("Formatted messages:", formattedMessages);
       return formattedMessages;
     } catch (error) {
       console.error("Error loading chat history:", error);
       return [];
     }
   };
+
+  // ✅ Update loadUserSessions to include personality
+  const loadUserSessions = async () => {
+    try {
+      setIsLoadingHistory(true);
+      const response = await fetch(
+        `http://localhost:8000/chat/sessions?personality=${selectedPersonality}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const formattedSessions: ChatHistoryItem[] = data.sessions.map(
+          (session: any, index: number) => ({
+            id: index + 1,
+            title: session.title,
+            lastMessage: session.title,
+            timestamp: new Date(session.timestamp).toLocaleDateString(),
+            session_id: session.session_id,
+          })
+        );
+
+        setChatHistory(formattedSessions);
+      }
+    } catch (error) {
+      console.error("Failed to load user sessions:", error);
+      setChatHistory([]);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // ✅ Reload sessions when personality changes
+  useEffect(() => {
+    loadUserSessions();
+  }, [selectedPersonality]); // Reload when personality changes
 
   const handleChatSelect = async (chatId: number) => {
     setActiveChatId(chatId);
@@ -266,7 +354,7 @@ export default function AIChatbotHomepage() {
         } else {
           setMessages([
             {
-              text: "Hello! I'm your AI assistant. How can I help you today?",
+              text: currentPersonality.greeting,
               isUser: false,
             },
           ]);
@@ -282,7 +370,6 @@ export default function AIChatbotHomepage() {
   const handleDeleteChat = async (chatId: number, e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // Add confirmation dialog
     const confirmed = window.confirm(
       "Are you sure you want to delete this chat? This action cannot be undone."
     );
@@ -292,7 +379,6 @@ export default function AIChatbotHomepage() {
       const chatToDelete = chatHistory.find((chat) => chat.id === chatId);
       if (!chatToDelete) return;
 
-      // Show loading state (optional)
       const originalTitle = chatToDelete.title;
       setChatHistory((prev) =>
         prev.map((chat) =>
@@ -309,7 +395,6 @@ export default function AIChatbotHomepage() {
       );
 
       if (!response.ok) {
-        // Restore original title if deletion fails
         setChatHistory((prev) =>
           prev.map((chat) =>
             chat.id === chatId ? { ...chat, title: originalTitle } : chat
@@ -318,10 +403,8 @@ export default function AIChatbotHomepage() {
         throw new Error("Failed to delete chat from server");
       }
 
-      // Remove from local state
       setChatHistory((prev) => prev.filter((chat) => chat.id !== chatId));
 
-      // Handle active chat switching
       if (chatId === activeChatId) {
         const remainingChats = chatHistory.filter((chat) => chat.id !== chatId);
         if (remainingChats.length > 0) {
@@ -340,28 +423,55 @@ export default function AIChatbotHomepage() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // ✅ Personality Switcher Component
+  const PersonalitySwitcher = () => (
+    <div className="flex items-center gap-2 px-3 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50">
+      <div
+        className={`w-6 h-6 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center`}
+      >
+        <PersonalityIcon className="w-3 h-3 text-white" />
+      </div>
+      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        {currentPersonality.name}
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors">
-      {/* Header */}
+      {/* Enhanced Header with Personality */}
       <header className="flex items-center justify-between p-6 border-b bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+        <div className="flex items-center gap-4">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => (window.location.href = "/")}
+          >
+            <div
+              className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-lg flex items-center justify-center`}
+            >
+              <PersonalityIcon className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+                {currentPersonality.name}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                AI Assistant
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            AI Assistant
-          </h1>
+
+          {/* ✅ Personality indicator */}
+          <PersonalitySwitcher />
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Dark Mode Toggle */}
           <DarkModeToggle />
 
-          {/* User Profile */}
           <div className="flex items-center gap-3">
             {userData?.picture ? (
               <img
-                src={userData.picture || "/avatar"}
+                src={userData.picture}
                 alt={userData.name || "Profile"}
                 className="w-8 h-8 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm"
                 referrerPolicy="no-referrer"
@@ -395,7 +505,7 @@ export default function AIChatbotHomepage() {
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         <div className="flex gap-6 h-[calc(100vh-200px)]">
-          {/* Enhanced Sidebar with fixed height */}
+          {/* Enhanced Sidebar */}
           <div
             className={`transition-all duration-300 ease-in-out flex-shrink-0 ${
               isSidebarOpen
@@ -404,12 +514,11 @@ export default function AIChatbotHomepage() {
             }`}
           >
             <Card className="h-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-lg flex flex-col">
-              {/* Header with New Chat and Collapse buttons - Fixed height */}
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
                 <div className="flex gap-2">
                   <Button
                     onClick={handleNewChat}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    className={`flex-1 bg-gradient-to-r ${currentPersonality.color} hover:opacity-90 text-white`}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     New Chat
@@ -427,7 +536,6 @@ export default function AIChatbotHomepage() {
                 </div>
               </div>
 
-              {/* Chat History - Scrollable area with flex-1 */}
               <div className="flex-1 flex flex-col min-h-0 p-4">
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3 flex-shrink-0">
                   Chat History
@@ -496,7 +604,6 @@ export default function AIChatbotHomepage() {
           {/* Chat Area */}
           <div className="flex-1 transition-all duration-300 ease-in-out">
             <Card className="h-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-lg flex flex-col">
-              {/* Chat Header with expand button when sidebar is closed */}
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
                 {!isSidebarOpen && (
                   <>
@@ -528,28 +635,26 @@ export default function AIChatbotHomepage() {
                       message.isUser ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {/* AI Avatar - only show for AI messages */}
                     {!message.isUser && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-4 h-4 text-white" />
+                      <div
+                        className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center flex-shrink-0`}
+                      >
+                        <PersonalityIcon className="w-4 h-4 text-white" />
                       </div>
                     )}
 
-                    {/* Message Bubble with proper styling */}
                     <div
                       className={`max-w-xs md:max-w-md lg:max-w-lg rounded-2xl px-4 py-3 ${
                         message.isUser
-                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-tr-sm" // ✅ User messages: blue gradient
-                          : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm" // ✅ AI messages: grey with dark mode
+                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-tr-sm"
+                          : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm"
                       }`}
                     >
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.text || "No content"}{" "}
-                        {/* ✅ Add fallback text */}
+                        {message.text || "No content"}
                       </p>
                     </div>
 
-                    {/* User Avatar - only show for user messages */}
                     {message.isUser && (
                       <div className="w-8 h-8 flex-shrink-0">
                         {userData?.picture ? (
@@ -569,7 +674,6 @@ export default function AIChatbotHomepage() {
                   </div>
                 ))}
 
-                {/* Enhanced Typing Indicator */}
                 {isTyping && <TypingIndicator />}
               </div>
 
@@ -581,7 +685,7 @@ export default function AIChatbotHomepage() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Type your message here... (Press Enter to send)"
+                      placeholder={`Chat with ${currentPersonality.name}... (Press Enter to send)`}
                       className="resize-none border-slate-200 dark:border-slate-600 focus:border-blue-300 dark:focus:border-blue-500 focus:ring-blue-200 dark:focus:ring-blue-800 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400"
                       disabled={isTyping}
                     />
@@ -589,7 +693,7 @@ export default function AIChatbotHomepage() {
                   <Button
                     onClick={handleSendMessage}
                     disabled={inputValue.trim() === "" || isTyping}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 disabled:opacity-50"
+                    className={`bg-gradient-to-r ${currentPersonality.color} hover:opacity-90 text-white px-6 disabled:opacity-50`}
                   >
                     {isTyping ? "Sending..." : "Send"}
                   </Button>
