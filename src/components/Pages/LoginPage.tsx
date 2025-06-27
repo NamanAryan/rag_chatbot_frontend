@@ -9,7 +9,7 @@ export default function GoogleLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<{ name: string; email: string; picture?: string } | null>(null)
-
+  const BACKEND_URL = import.meta.env.BACKEND_URL
   useEffect(() => {
     checkAuthStatus()
   }, [])
@@ -17,7 +17,7 @@ export default function GoogleLoginPage() {
   const checkAuthStatus = async () => {
     try {
       // Try to get user data from protected endpoint
-      const response = await fetch("http://localhost:8000/protected", {
+      const response = await fetch(`${BACKEND_URL}/protected`, {
         method: 'GET',
         credentials: 'include', 
         headers: {
@@ -55,7 +55,7 @@ export default function GoogleLoginPage() {
     setError(null)
 
     try {
-      const res = await fetch("http://localhost:8000/auth/google/url")
+      const res = await fetch(`${BACKEND_URL}/auth/google/url`)
       const data = await res.json()
       if (data?.url) {
         console.log("Redirecting to Google login URL:", data.url)
@@ -72,7 +72,7 @@ export default function GoogleLoginPage() {
   const handleLogout = async () => {
     try {
       // Call logout endpoint if you have one
-      await fetch("http://localhost:8000/logout", {
+      await fetch(`${BACKEND_URL}/logout`, {
         method: 'POST',
         credentials: 'include',
       })

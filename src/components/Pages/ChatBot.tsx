@@ -105,6 +105,7 @@ export default function AIChatbotHomepage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeChatId, setActiveChatId] = useState(1);
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const BACKEND_URL = import.meta.env.BACKEND_URL
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   // const [isFileUploading, setIsFileUploading] = useState(false);
   const [hasUploadedFile, setHasUploadedFile] = useState(false);
@@ -180,7 +181,7 @@ export default function AIChatbotHomepage() {
       formData.append("session_id", sessionId!);
       formData.append("personality", selectedPersonality);
 
-      const response = await fetch("http://localhost:8000/upload-file", {
+      const response = await fetch(`${BACKEND_URL}/upload-file`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -236,7 +237,7 @@ export default function AIChatbotHomepage() {
     try {
       setIsLoadingHistory(true);
       const response = await fetch(
-        `http://localhost:8000/chat/sessions?personality=${selectedPersonality}`,
+        `${BACKEND_URL}/chat/sessions?personality=${selectedPersonality}`,
         {
           credentials: "include",
         }
@@ -369,7 +370,7 @@ export default function AIChatbotHomepage() {
 
     try {
       console.log("Sending has_file:", hasUploadedFile);
-      const response = await fetch("http://localhost:8000/ask", {
+      const response = await fetch(`${BACKEND_URL}/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -408,7 +409,7 @@ export default function AIChatbotHomepage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/logout", {
+      await fetch(`${BACKEND_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -496,7 +497,7 @@ export default function AIChatbotHomepage() {
   const loadChatHistory = async (sessionId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/chat/history?session_id=${sessionId}&personality=${selectedPersonality}`,
+        `${BACKEND_URL}/chat/history?session_id=${sessionId}&personality=${selectedPersonality}`,
         {
           credentials: "include",
         }
@@ -564,7 +565,7 @@ export default function AIChatbotHomepage() {
       );
 
       const response = await fetch(
-        `http://localhost:8000/chat/delete/${chatToDelete.session_id}?personality=${selectedPersonality}`,
+        `${BACKEND_URL}/chat/delete/${chatToDelete.session_id}?personality=${selectedPersonality}`,
         {
           method: "DELETE",
           credentials: "include",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+const BACKEND_URL = import.meta.env.BACKEND_URL 
 export default function AuthRedirect() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
@@ -11,7 +11,7 @@ export default function AuthRedirect() {
 
   const authenticateUser = async () => {
     try {
-      const response = await fetch("http://localhost:8000/protected", {
+    const response = await fetch(`${BACKEND_URL}/protected`, {
         method: 'GET',
         credentials: 'include',
         headers: {

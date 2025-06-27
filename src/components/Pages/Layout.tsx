@@ -4,7 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 
 import type { ReactNode } from 'react';
-
+const BACKEND_URL = import.meta.env.BACKEND_URL 
 interface LayoutProps {
   children: ReactNode;
   headerProps?: Record<string, any>;
@@ -81,7 +81,7 @@ const Layout = ({
     });
 
     // Optional: Call logout endpoint
-    fetch("http://localhost:8000/logout", {
+    fetch(`${BACKEND_URL}/logout`, {
       method: "POST",
       credentials: "include",
     }).catch(() => {
