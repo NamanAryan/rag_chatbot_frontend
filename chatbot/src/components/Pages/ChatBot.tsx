@@ -1074,7 +1074,7 @@ export default function AIChatbotHomepage() {
                     <Button
                       onClick={handleSendMessage}
                       disabled={
-                        input.trim() === "" || // Changed from inputValue to input
+                        input.trim() === "" || 
                         isTyping ||
                         uploadStatus === "uploading"
                       }
