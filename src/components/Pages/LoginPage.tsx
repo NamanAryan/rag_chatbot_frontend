@@ -1,90 +1,103 @@
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { User, Loader2, Sparkles } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Loader2, Sparkles } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export default function GoogleLoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userData, setUserData] = useState<{ name: string; email: string; picture?: string } | null>(null)
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<{
+    name: string;
+    email: string;
+    picture?: string;
+  } | null>(null);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   useEffect(() => {
-    checkAuthStatus()
-  }, [])
+    const urlParams = new URLSearchParams(window.location.search);
+    const isFromOAuth =
+      urlParams.has("code") || window.location.pathname.includes("callback");
+
+    if (isFromOAuth) {
+      setTimeout(() => {
+        checkAuthStatus();
+      }, 1000);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      checkAuthStatus();
+    }
+  }, []);
 
   const checkAuthStatus = async () => {
     try {
-      // Try to get user data from protected endpoint
       const response = await fetch(`${BACKEND_URL}/protected`, {
-        method: 'GET',
-        credentials: 'include', 
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
-        }
-      })
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json();
         const user = {
           name: data.user.name,
           email: data.user.email,
-          picture: data.user.picture
-        }
-        setUserData(user)
-        setIsLoggedIn(true)
-        localStorage.setItem('user', JSON.stringify(user))
+          picture: data.user.picture,
+        };
+        setUserData(user);
+        setIsLoggedIn(true);
+        localStorage.setItem("user", JSON.stringify(user));
       } else {
-        localStorage.removeItem('user')
-        setIsLoggedIn(false)
-        setUserData(null)
+        localStorage.removeItem("user");
+        setIsLoggedIn(false);
+        setUserData(null);
       }
     } catch (err) {
       // Check localStorage as fallback
-      const storedUser = localStorage.getItem("user")
+      const storedUser = localStorage.getItem("user");
       if (storedUser) {
-        setUserData(JSON.parse(storedUser))
-        setIsLoggedIn(true)
+        setUserData(JSON.parse(storedUser));
+        setIsLoggedIn(true);
       }
     }
-  }
+  };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/google/url`)
-      const data = await res.json()
+      const res = await fetch(`${BACKEND_URL}/auth/google/url`);
+      const data = await res.json();
       if (data?.url) {
-        console.log("Redirecting to Google login URL:", data.url)
-        window.location.href = data.url 
+        console.log("Redirecting to Google login URL:", data.url);
+        window.location.href = data.url;
       } else {
-        throw new Error("Failed to get Google login URL")
+        throw new Error("Failed to get Google login URL");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed")
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : "Login failed");
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
     try {
-      // Call logout endpoint if you have one
       await fetch(`${BACKEND_URL}/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      })
+        method: "POST",
+        credentials: "include",
+      });
     } catch (err) {
-      console.log("Logout endpoint not available")
+      console.log("Logout endpoint not available");
     }
-    
+
     // Clear local storage and state
-    localStorage.removeItem('user')
-    setUserData(null)
-    setIsLoggedIn(false)
-  }
+    localStorage.removeItem("user");
+    setUserData(null);
+    setIsLoggedIn(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -93,11 +106,13 @@ export default function GoogleLoginPage() {
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-200">AI Assistant</h1>
+          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+            AI Assistant
+          </h1>
         </div>
         {isLoggedIn && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleLogout}
             className="text-slate-600 hover:text-slate-800"
@@ -115,10 +130,12 @@ export default function GoogleLoginPage() {
               <User className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-              {isLoggedIn ? 'Welcome back!' : 'Sign in to continue'}
+              {isLoggedIn ? "Welcome back!" : "Sign in to continue"}
             </CardTitle>
             <p className="text-slate-600 dark:text-slate-400">
-              {isLoggedIn ? 'You are successfully signed in' : 'Access your AI assistant with Google'}
+              {isLoggedIn
+                ? "You are successfully signed in"
+                : "Access your AI assistant with Google"}
             </p>
           </CardHeader>
           <CardContent className="grid gap-6">
@@ -136,13 +153,15 @@ export default function GoogleLoginPage() {
                   </div>
                 )}
                 <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold text-slate-800">{userData?.name || 'User'}</h3>
+                  <h3 className="text-lg font-semibold text-slate-800">
+                    {userData?.name || "User"}
+                  </h3>
                   <p className="text-sm text-slate-600">{userData?.email}</p>
                 </div>
-                
-                <Button 
+
+                <Button
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-md"
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => (window.location.href = "/")}
                 >
                   Continue to AI Assistant
                 </Button>
@@ -173,11 +192,28 @@ export default function GoogleLoginPage() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
-                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 48 48"
+                      >
+                        <path
+                          fill="#FFC107"
+                          d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+                        ></path>
+                        <path
+                          fill="#FF3D00"
+                          d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+                        ></path>
+                        <path
+                          fill="#4CAF50"
+                          d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+                        ></path>
+                        <path
+                          fill="#1976D2"
+                          d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+                        ></path>
                       </svg>
                       <span className="font-medium">Continue with Google</span>
                     </div>
@@ -191,7 +227,21 @@ export default function GoogleLoginPage() {
                 )}
 
                 <div className="text-xs text-slate-500 text-center mt-2">
-                  By continuing, you agree to our <a href="#" className="underline hover:text-slate-700 transition-colors">Terms of Service</a> and <a href="#" className="underline hover:text-slate-700 transition-colors">Privacy Policy</a>.
+                  By continuing, you agree to our{" "}
+                  <a
+                    href="#"
+                    className="underline hover:text-slate-700 transition-colors"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#"
+                    className="underline hover:text-slate-700 transition-colors"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
                 </div>
               </>
             )}
@@ -199,5 +249,5 @@ export default function GoogleLoginPage() {
         </Card>
       </main>
     </div>
-  )
+  );
 }

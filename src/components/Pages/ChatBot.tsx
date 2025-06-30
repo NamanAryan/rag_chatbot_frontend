@@ -479,19 +479,6 @@ export default function AIChatbotHomepage() {
 
     const config = getStatusConfig();
     if (!config) return null;
-
-    return (
-      <div className="fixed top-20 right-6 z-50 animate-in slide-in-from-right-2 duration-300">
-        <div
-          className={`${config.bgColor} ${config.textColor} px-4 py-2 rounded-lg shadow-lg flex items-center gap-2`}
-        >
-          <span className={status === "uploading" ? "animate-spin" : ""}>
-            {config.icon}
-          </span>
-          <span className="text-sm font-medium">{config.text}</span>
-        </div>
-      </div>
-    );
   };
 
   const loadChatHistory = async (sessionId: string) => {
