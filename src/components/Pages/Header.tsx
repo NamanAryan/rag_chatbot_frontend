@@ -40,32 +40,11 @@ const Header: React.FC<HeaderProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState(false);
   const location = useLocation();
-  // useEffect(() => {
-  //   console.log("=== DEBUGGING LOCALSTORAGE ===");
-  //   console.log("All localStorage keys:", Object.keys(localStorage));
-  //   console.log("localStorage.token:", localStorage.getItem("token"));
-  //   console.log("localStorage.authToken:", localStorage.getItem("authToken"));
-  //   console.log("localStorage.user:", localStorage.getItem("user"));
-  //   console.log(
-  //     "localStorage.accessToken:",
-  //     localStorage.getItem("accessToken")
-  //   );
-  //   console.log("localStorage.jwt:", localStorage.getItem("jwt"));
-  //   console.log("localStorage.auth:", localStorage.getItem("auth"));
-  //   console.log("localStorage.userToken:", localStorage.getItem("userToken"));
-  //   console.log("================================");
-  // }, []);
+  
   useEffect(() => {
     const checkAuth = () => {
       const user = localStorage.getItem("user");
       const isLoggedIn = !!user;
-
-      console.log("Auth Check:", {
-        user: !!user,
-        userValue: user,
-        isLoggedIn,
-      });
-
       setAuthState(isLoggedIn);
     };
 
@@ -136,14 +115,6 @@ const Header: React.FC<HeaderProps> = ({
 
   // Use authState OR isAuthenticated prop
   const showLoggedIn = authState || isAuthenticated;
-
-  console.log("Rendering Header:", {
-    authState,
-    isAuthenticated,
-    showLoggedIn,
-    userData,
-  });
-
   return (
     <header className="relative overflow-hidden border-b border-slate-200/20 dark:border-slate-700/20 sticky top-0 z-50">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-indigo-500/10">

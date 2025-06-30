@@ -1,64 +1,46 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-const BACKEND_URL = import.meta.env.BACKEND_URL 
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 export default function AuthRedirect() {
-  const navigate = useNavigate()
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('Processing authentication...');
 
   useEffect(() => {
-    authenticateUser()
-  }, [])
-
-  const authenticateUser = async () => {
-    try {
-    const response = await fetch(`${BACKEND_URL}/protected`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
+    const checkAuth = async () => {
+      try {
+        // Add a small delay to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        setStatus('Verifying credentials...');
+        
+        const response = await fetch('/protected', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          setStatus('✅ Authentication successful! Redirecting...');
+          setTimeout(() => navigate('/login'), 1000);
+        } else {
+          setStatus('❌ Authentication failed. Redirecting to login...');
+          setTimeout(() => navigate('/login'), 2000);
         }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const user = {
-          name: data.user.name,
-          email: data.user.email,
-          picture: data.user.picture
-        }
-        localStorage.setItem("user", JSON.stringify(user))
-        navigate("/") // Redirect to main app
-        return
+      } catch (error) {
+        setStatus('❌ Authentication error. Redirecting to login...');
+        setTimeout(() => navigate('/login'), 2000);
       }
+    };
 
-      // If protected endpoint fails, redirect to login
-      console.error("Authentication failed:", response.status)
-      navigate("/login")
-
-    } catch (err) {
-      console.error("Authentication error:", err)
-      setError("Authentication failed")
-      setTimeout(() => navigate("/login"), 2000)
-    }
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 text-lg mb-2">{error}</p>
-          <p className="text-slate-600">Redirecting to login...</p>
-        </div>
-      </div>
-    )
-  }
+    checkAuth();
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-slate-600 text-lg">Signing you in...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p>{status}</p>
       </div>
     </div>
-  )
+  );
 }
+// This component handles the OAuth redirect and checks authentication status
+// It displays a loading spinner and status messages while processing

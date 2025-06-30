@@ -1,4 +1,3 @@
-// App.jsx or App.js
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./components/Pages/HomePage";
 import Login from "./components/Pages/LoginPage";
@@ -15,28 +14,18 @@ export default function App() {
     <DarkModeProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<HomePage />} />
+          {/* Public routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/features" element={<Features />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* OAuth callback route */}
           <Route path="/google" element={<AuthRedirect />} />
-          {/* Redirect root path to home */}
-          <Route path="/" element={<HomePage />} />
-          {/* Redirect any unknown paths to home */}
-          <Route path="*" element={<HomePage />} />
-          {/* Redirect root path to login if not authenticated */}
-          <Route
-            path="/login"
-            element={
-              <ProtectedRoute>
-                <Login />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Protected route */}
+          
+          {/* Protected routes */}
           <Route
             path="/chat"
             element={
@@ -45,6 +34,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          
+          {/* Catch-all route - must be last */}
+          <Route path="*" element={<HomePage />} />
         </Routes>
       </Router>
     </DarkModeProvider>

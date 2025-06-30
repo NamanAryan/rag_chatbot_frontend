@@ -1,4 +1,3 @@
-// pages/About.jsx
 import Layout from './Layout';
 import { Users, Target, Award } from 'lucide-react';
 

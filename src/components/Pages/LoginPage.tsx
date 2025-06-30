@@ -9,7 +9,7 @@ export default function GoogleLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<{ name: string; email: string; picture?: string } | null>(null)
-  const BACKEND_URL = import.meta.env.BACKEND_URL
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
   useEffect(() => {
     checkAuthStatus()
   }, [])
