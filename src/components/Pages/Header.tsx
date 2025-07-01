@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("authToken");
-    window.location.reload(); // Force page reload to update state
+    window.location.reload(); 
   },
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
