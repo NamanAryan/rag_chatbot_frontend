@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sparkles, LogOut, LogIn, Menu, X } from "lucide-react";
-import { Button } from "../ui/button";
-import { DarkModeToggle } from "../DarkModeToggle";
+import { Button } from "./ui/button";
+import { DarkModeToggle } from "./DarkModeToggle";
 
 type UserData = {
   picture: string | undefined;
@@ -33,14 +33,14 @@ const Header: React.FC<HeaderProps> = ({
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("authToken");
-    window.location.reload(); 
+    window.location.reload();
   },
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState(false);
   const location = useLocation();
-  
+
   useEffect(() => {
     const checkAuth = () => {
       const user = localStorage.getItem("user");
@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
   // Use authState OR isAuthenticated prop
   const showLoggedIn = authState || isAuthenticated;
   return (
-    <header className="relative overflow-hidden border-b border-slate-200/20 dark:border-slate-700/20 sticky top-0 z-50">
+    <header className="relative overflow-hidden border-b border-slate-200/20 dark:border-slate-700/20 top-0 z-50">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-indigo-600/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-indigo-500/10">
         <div className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"></div>
       </div>

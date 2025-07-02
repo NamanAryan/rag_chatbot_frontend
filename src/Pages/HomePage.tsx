@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Header from "./Header";
+import Header from "../components/Header";
 import Footer from "./Footer";
 const PERSONALITIES = [
   {
@@ -135,8 +135,6 @@ const HomePage = () => {
     localStorage.setItem("selectedPersonality", personalityId);
     console.log(`Selected personality: ${personalityId}`);
   };
-
-
 
   const handleStartChat = () => {
     // ✅ Pass selected personality to chat

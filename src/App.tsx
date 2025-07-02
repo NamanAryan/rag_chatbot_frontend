@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./components/Pages/HomePage";
-import Login from "./components/Pages/LoginPage";
+import HomePage from "./Pages/HomePage";
+import Login from "./Pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ChatBot from "./components/Pages/ChatBot";
-import AuthRedirect from "./components/Pages/AuthRedirect";
+import ChatBot from "./Pages/ChatBot";
+import AuthRedirect from "./Pages/AuthRedirect";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
-import About from './components/Pages/About';
-import Features from './components/Pages/Features';
-import Contact from './components/Pages/Contact';
+import About from "./Pages/About";
+import Features from "./Pages/Features";
+import Contact from "./Pages/Contact";
 
 export default function App() {
   return (
@@ -21,10 +21,10 @@ export default function App() {
           <Route path="/features" element={<Features />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
-          
+
           {/* OAuth callback route */}
           <Route path="/google" element={<AuthRedirect />} />
-          
+
           {/* Protected routes */}
           <Route
             path="/chat"
@@ -34,7 +34,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Catch-all route - must be last */}
           <Route path="*" element={<HomePage />} />
         </Routes>

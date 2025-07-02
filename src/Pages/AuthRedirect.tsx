@@ -42,5 +42,3 @@ export default function AuthRedirect() {
     </div>
   );
 }
-// This component handles the OAuth redirect and checks authentication status
-// It displays a loading spinner and status messages while processing
