@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/button";
+import { Input } from "@/components/input";
+import { Card } from "@/components/card";
 import {
   LogOut,
   MessageCircle,
@@ -105,7 +105,7 @@ export default function AIChatbotHomepage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeChatId, setActiveChatId] = useState(1);
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   // const [isFileUploading, setIsFileUploading] = useState(false);
   const [hasUploadedFile, setHasUploadedFile] = useState(false);
@@ -1062,7 +1062,7 @@ export default function AIChatbotHomepage() {
                     <Button
                       onClick={handleSendMessage}
                       disabled={
-                        input.trim() === "" || 
+                        input.trim() === "" ||
                         isTyping ||
                         uploadStatus === "uploading"
                       }

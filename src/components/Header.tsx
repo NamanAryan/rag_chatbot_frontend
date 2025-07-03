@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sparkles, LogOut, LogIn, Menu, X } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "./button";
 import { DarkModeToggle } from "./DarkModeToggle";
 
 type UserData = {

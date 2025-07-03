@@ -8,8 +8,8 @@ import {
   BookOpen,
   Briefcase,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/button";
+import { Card } from "@/components/card";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "../components/Header";

@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/button";
 import { useDarkMode } from "@/contexts/DarkModeContext";
 
 interface DarkModeToggleProps {
@@ -8,10 +8,10 @@ interface DarkModeToggleProps {
   showLabel?: boolean;
 }
 
-export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({ 
-  variant = "ghost", 
+export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
+  variant = "ghost",
   size = "sm",
-  showLabel = false 
+  showLabel = false,
 }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
