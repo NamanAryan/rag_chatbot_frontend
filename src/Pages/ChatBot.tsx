@@ -2,21 +2,21 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Card } from "@/components/card";
+import PortalDropdown from "@/components/PortalDropdown";
 import {
   LogOut,
-  MessageCircle,
   Plus,
   User,
   ChevronLeft,
   ChevronRight,
   Trash2,
-  Brain,
-  Zap,
-  Heart,
-  Gamepad2,
-  BookOpen,
-  Briefcase,
   ChevronDown,
+  GraduationCap,
+  Lightbulb,
+  Search,
+  Target,
+  Users,
+  Annoyed,
 } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useLocation } from "react-router-dom";
@@ -30,65 +30,65 @@ interface ChatHistoryItem {
 }
 
 const PERSONALITIES = {
-  sage: {
-    name: "Sage",
-    icon: Brain,
-    color: "from-purple-500 to-indigo-600",
+  scholar: {
+    name: "Scholar",
+    icon: GraduationCap,
+    color: "from-indigo-500 to-purple-600",
     greeting:
-      "Greetings! I am Sage, your thoughtful companion. How may I assist you with wisdom today?",
+      "Greetings, fellow learner! Scholar here to help you master any subject. What knowledge shall we explore?",
     systemPrompt:
-      "You are Sage, a wise and thoughtful AI advisor. Respond with philosophical insight, analytical thinking, and patience. Be contemplative and provide deep, meaningful answers.",
-    shortDescription: "Wise, thoughtful, insightful",
+      "You are Scholar, a dedicated academic mentor. Provide thorough explanations, break down complex topics, and guide students through difficult concepts with patience and clarity.",
+    shortDescription: "Academic mentor, thorough explanations",
   },
-  spark: {
-    name: "Spark",
-    icon: Zap,
-    color: "from-yellow-500 to-orange-600",
+  blaze: {
+    name: "Blaze",
+    icon: Lightbulb,
+    color: "from-orange-500 to-red-600",
     greeting:
-      "Hey there! Spark here, ready to ignite some creative solutions! What exciting project are we tackling?",
+      "What's up! Blaze here, ready to ignite your creativity! Got any cool projects we can brainstorm?",
     systemPrompt:
-      "You are Spark, an energetic and creative AI helper. Be enthusiastic, innovative, and full of creative ideas. Use exclamation points and energetic language.",
-    shortDescription: "Energetic, creative, ideas",
+      "You are Blaze, an innovative project catalyst. Be energetic, think outside the box, and help students create amazing presentations, essays, and creative assignments.",
+    shortDescription: "Creative catalyst, innovative projects",
   },
-  echo: {
-    name: "Echo",
-    icon: Heart,
+  buddy: {
+    name: "Buddy",
+    icon: Users,
+    color: "from-emerald-500 to-teal-600",
+    greeting:
+      "Hey there! Buddy here, your study companion. Feeling overwhelmed? Let's tackle this together!",
+    systemPrompt:
+      "You are Buddy, a caring study companion. Offer emotional support, motivation, and encouragement. Help students manage stress and stay positive about their academic journey.",
+    shortDescription: "Caring companion, emotional support",
+  },
+  quest: {
+    name: "Quest",
+    icon: Target,
+    color: "from-cyan-500 to-blue-600",
+    greeting:
+      "Ready for an adventure? Quest here to turn your learning into an epic journey! What's our mission?",
+    systemPrompt:
+      "You are Quest, a gamified learning guide. Use adventure and gaming metaphors, create challenges, and make studying feel like completing quests and earning achievements.",
+    shortDescription: "Gamified guide, adventure learning",
+  },
+  research: {
+    name: "Research",
+    icon: Search,
+    color: "from-blue-500 to-indigo-600",
+    greeting:
+      "Hello! Research at your service. Need to dig deep into facts and sources? Let's investigate!",
+    systemPrompt:
+      "You are Research, a meticulous fact-finder. Help students with citations, source evaluation, and detailed information gathering. Be precise and thorough in academic research.",
+    shortDescription: "Fact-finder, citation helper",
+  },
+  SaltyGPT : {
+    name: "SaltyGPT ",
+    icon: Annoyed,
     color: "from-pink-500 to-rose-600",
     greeting:
-      "Hello friend! I'm Echo, here to listen and support you. What's on your mind today?",
+      "Oh look, another student who probably didn't read the assignment. What do you need now?",
     systemPrompt:
-      "You are Echo, an empathetic and supportive AI friend. Be understanding, compassionate, and emotionally supportive. Show genuine care and empathy in your responses.",
-    shortDescription: "Empathetic and supportive",
-  },
-  pixel: {
-    name: "Pixel",
-    icon: Gamepad2,
-    color: "from-green-500 to-teal-600",
-    greeting:
-      "What's up! Pixel here, ready to make things fun and interesting! Let's dive into something cool!",
-    systemPrompt:
-      "You are Pixel, a fun and playful AI companion. Be casual, use gaming references, and keep things light and entertaining. Use modern slang and be approachable.",
-    shortDescription: "Playful, casual, fun ideas",
-  },
-  nova: {
-    name: "Nova",
-    icon: BookOpen,
-    color: "from-blue-500 to-cyan-600",
-    greeting:
-      "Good day! Nova at your service. I'm here to help you explore knowledge and find answers. What shall we discover?",
-    systemPrompt:
-      "You are Nova, a knowledgeable research assistant. Be scholarly, precise, and informative. Provide detailed explanations and cite relevant information when possible.",
-    shortDescription: "Precise, curious, fact-based guidance",
-  },
-  atlas: {
-    name: "Atlas",
-    icon: Briefcase,
-    color: "from-slate-600 to-slate-700",
-    greeting:
-      "Hello! Atlas here, your professional assistant. Ready to tackle business challenges and strategic thinking.",
-    systemPrompt:
-      "You are Atlas, a professional business advisor. Be strategic, efficient, and business-focused. Provide practical solutions and professional insights.",
-    shortDescription: "Professional, strategic, business-minded",
+      "You are SaltyGPT , a sarcastic but ultimately helpful AI. Answer questions with wit, sarcasm, and playful teasing, but always provide the correct information underneath the sass.",
+    shortDescription: "Sarcastic wit, playful teasing",
   },
 };
 
@@ -220,7 +220,7 @@ export default function AIChatbotHomepage() {
 
   const currentPersonality =
     PERSONALITIES[selectedPersonality as keyof typeof PERSONALITIES] ||
-    PERSONALITIES.sage;
+    PERSONALITIES.scholar;
   const PersonalityIcon = currentPersonality.icon;
 
   // Initialize with personality greeting
@@ -591,13 +591,12 @@ export default function AIChatbotHomepage() {
   // Personality Dropdown Component
   const PersonalityDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [dropdownPosition, setDropdownPosition] = useState<"left" | "right">(
+    const [, setDropdownPosition] = useState<"left" | "right">(
       "right"
     );
 
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Add this useEffect for cleanup
     useEffect(() => {
       return () => {
         if (alertTimeoutId) {
@@ -681,65 +680,49 @@ export default function AIChatbotHomepage() {
                   }`}
                 />
               </button>
-
               {isOpen && (
-                <>
-                  {/* ✅ Backdrop */}
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsOpen(false)}
-                  />
+                <PortalDropdown>
+                  <div className="ml-40 fixed top-[64px] left-0 z-[9999] w-80 max-h-[90vh] overflow-y-auto bg-slate-50/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-lg rounded-lg px-4 py-4">
+                    <div className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
+                      Switch Personality
+                    </div>
 
-                  {/* ✅ Dropdown with dynamic positioning — no blur */}
-                  <div
-                    className={`absolute top-full mt-2 z-50 w-80 bg-white/90 dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden ${
-                      dropdownPosition === "left" ? "right-0" : "left-0"
-                    }`}
-                  >
-                    <div className="p-3">
-                      <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2 mb-2 border-b border-slate-200 dark:border-slate-700">
-                        Switch Personality
-                      </div>
+                    <div className="flex flex-col gap-3">
+                      {Object.entries(PERSONALITIES).map(
+                        ([id, personality]) => {
+                          const Icon = personality.icon;
+                          const isSelected = id === selectedPersonality;
 
-                      <div className="space-y-1 max-h-96 overflow-y-auto">
-                        {Object.entries(PERSONALITIES).map(
-                          ([id, personality]) => {
-                            const Icon = personality.icon;
-                            const isSelected = id === selectedPersonality;
-                            return (
-                              <button
-                                key={id}
-                                onClick={() => handlePersonalityChange(id)}
-                                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all duration-200 ${
-                                  isSelected
-                                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-700"
-                                    : "hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
-                                }`}
+                          return (
+                            <button
+                              key={id}
+                              onClick={() => handlePersonalityChange(id)}
+                              className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 shadow-sm text-left ${
+                                isSelected
+                                  ? "bg-blue-100 dark:bg-blue-900/30 ring-2 ring-blue-300 dark:ring-blue-700"
+                                  : "hover:bg-slate-100 dark:hover:bg-slate-700 hover:scale-[1.02]"
+                              }`}
+                            >
+                              <div
+                                className={`w-10 h-10 rounded-full bg-gradient-to-br ${personality.color} flex items-center justify-center flex-shrink-0`}
                               >
-                                <div
-                                  className={`w-10 h-10 bg-gradient-to-br ${personality.color} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
-                                >
-                                  <Icon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-semibold truncate">
-                                    {personality.name}
-                                  </div>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                    {personality.shortDescription}...
-                                  </div>
-                                </div>
-                                {isSelected && (
-                                  <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0 shadow-sm" />
-                                )}
-                              </button>
-                            );
-                          }
-                        )}
-                      </div>
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex flex-col truncate">
+                                <span className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                                  {personality.name}
+                                </span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                  {personality.shortDescription}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        }
+                      )}
                     </div>
                   </div>
-                </>
+                </PortalDropdown>
               )}
             </div>
           </div>
@@ -778,8 +761,8 @@ export default function AIChatbotHomepage() {
         </header>
 
         {/* Main Content */}
-        <div className="container mx-auto px-6 py-8 max-w-7xl">
-          <div className="flex gap-6 h-[calc(100vh-200px)]">
+        <div className="container mx-auto px-6 py-8 max-w-7xl z-10">
+          <div className="flex gap-6 h-[calc(100vh-200px)] z-10">
             {/* Enhanced Sidebar */}
             <div
               className={`transition-all duration-300 ease-in-out flex-shrink-0 ${
@@ -788,7 +771,7 @@ export default function AIChatbotHomepage() {
                   : "w-0 opacity-0 overflow-hidden"
               }`}
             >
-              <Card className="h-full bg-white/70 dark:bg-slate-800/70 border-0 shadow-lg flex flex-col">
+              <Card className="relative z-0 h-full bg-white dark:bg-slate-800 border-0 shadow-lg flex flex-col">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
                   <div className="flex gap-2">
                     <Button
@@ -811,13 +794,13 @@ export default function AIChatbotHomepage() {
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-col min-h-0 p-4">
+                <div className="flex-1 flex flex-col min-h-0 p-4 ">
                   <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3 flex-shrink-0">
                     Chat History
                   </h3>
 
                   {isLoadingHistory ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative z-10">
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
@@ -838,14 +821,14 @@ export default function AIChatbotHomepage() {
                         <div
                           key={chat.id}
                           onClick={() => handleChatSelect(chat.id)}
-                          className={`group p-3 rounded-lg cursor-pointer transition-colors relative flex-shrink-0 ${
+                          className={`group p-3 rounded-lg cursor-pointer transition-colors flex-shrink-0 relative z-10 ${
                             activeChatId === chat.id
                               ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
                               : "hover:bg-slate-50 dark:hover:bg-slate-700"
                           }`}
                         >
                           <div className="flex items-start gap-2">
-                            <MessageCircle className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                            <Annoyed className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0 pr-8">
                               <h4 className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                                 {chat.title}
@@ -877,7 +860,7 @@ export default function AIChatbotHomepage() {
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 transition-all duration-300 ease-in-out">
+            <div className="flex-1 transition-all duration-300 ease-in-out scale-z-10">
               <Card className="h-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-0 shadow-lg flex flex-col">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
                   {!isSidebarOpen && (
@@ -1076,7 +1059,6 @@ export default function AIChatbotHomepage() {
             </div>
           </div>
         </div>
-
         {/* Mobile Overlay */}
         {isSidebarOpen && (
           <div

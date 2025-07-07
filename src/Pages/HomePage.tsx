@@ -1,12 +1,12 @@
 import {
   Sparkles,
   MessageCircle,
-  Zap,
-  Heart,
   Brain,
-  Gamepad2,
-  BookOpen,
-  Briefcase,
+  GraduationCap,
+  Lightbulb,
+  Search,
+  Target,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
@@ -16,66 +16,67 @@ import Header from "../components/Header";
 import Footer from "./Footer";
 const PERSONALITIES = [
   {
-    id: "sage",
-    name: "Sage",
-    icon: Brain,
-    description: "Wise and thoughtful advisor",
-    color: "from-purple-500 to-indigo-600",
+    id: "scholar",
+    name: "Scholar",
+    icon: GraduationCap,
+    description: "Academic mentor focused on deep learning",
+    color: "from-indigo-500 to-purple-600",
     greeting:
-      "Greetings! I am Sage, your thoughtful companion. How may I assist you with wisdom today?",
-    traits: ["Philosophical", "Analytical", "Patient"],
+      "Greetings, fellow learner! Scholar here to help you master any subject. What knowledge shall we explore?",
+    traits: ["Academic", "Thorough", "Patient"],
   },
   {
-    id: "spark",
-    name: "Spark",
-    icon: Zap,
-    description: "Energetic and creative helper",
-    color: "from-yellow-500 to-orange-600",
+    id: "blaze",
+    name: "Blaze",
+    icon: Lightbulb,
+    description: "Creative fire for innovative projects",
+    color: "from-orange-500 to-red-600",
     greeting:
-      "Hey there! Spark here, ready to ignite some creative solutions! What exciting project are we tackling?",
+      "What's up! Blaze here, ready to ignite your creativity! Got any cool projects we can brainstorm?",
     traits: ["Creative", "Energetic", "Innovative"],
   },
   {
-    id: "echo",
-    name: "Echo",
-    icon: Heart,
-    description: "Empathetic and supportive friend",
+    id: "buddy",
+    name: "Buddy",
+    icon: Users,
+    description: "Supportive study companion",
+    color: "from-emerald-500 to-teal-600",
+    greeting:
+      "Hey there! Buddy here, your study companion. Feeling overwhelmed? Let's tackle this together!",
+    traits: ["Caring", "Supportive", "Motivational"],
+  },
+  {
+    id: "quest",
+    name: "Quest",
+    icon: Target,
+    description: "Gamified learning guide",
+    color: "from-cyan-500 to-blue-600",
+    greeting:
+      "Ready for an adventure? Quest here to turn your learning into an epic journey! What's our mission?",
+    traits: ["Playful", "Adventurous", "Engaging"],
+  },
+  {
+    id: "research",
+    name: "Research",
+    icon: Search,
+    description: "Meticulous fact-finder",
+    color: "from-blue-500 to-indigo-600",
+    greeting:
+      "Hello! Research at your service. Need to dig deep into facts and sources? Let's investigate!",
+    traits: ["Precise", "Scholarly", "Informative"],
+  },
+  {
+    id: "sassy",
+    name: "Sassy",
+    icon: MessageCircle,
+    description: "Sarcastic but helpful AI",
     color: "from-pink-500 to-rose-600",
     greeting:
-      "Hello friend! I'm Echo, here to listen and support you. What's on your mind today?",
-    traits: ["Empathetic", "Supportive", "Understanding"],
-  },
-  {
-    id: "pixel",
-    name: "Pixel",
-    icon: Gamepad2,
-    description: "Fun and playful companion",
-    color: "from-green-500 to-teal-600",
-    greeting:
-      "What's up! Pixel here, ready to make things fun and interesting! Let's dive into something cool!",
-    traits: ["Playful", "Fun", "Casual"],
-  },
-  {
-    id: "nova",
-    name: "Nova",
-    icon: BookOpen,
-    description: "Knowledgeable research assistant",
-    color: "from-blue-500 to-cyan-600",
-    greeting:
-      "Good day! Nova at your service. I'm here to help you explore knowledge and find answers. What shall we discover?",
-    traits: ["Scholarly", "Precise", "Informative"],
-  },
-  {
-    id: "atlas",
-    name: "Atlas",
-    icon: Briefcase,
-    description: "Professional business advisor",
-    color: "from-slate-600 to-slate-700",
-    greeting:
-      "Hello! Atlas here, your professional assistant. Ready to tackle business challenges and strategic thinking.",
-    traits: ["Professional", "Strategic", "Efficient"],
+      "Oh look, another student who probably didn't read the assignment. What do you need now?",
+    traits: ["Sarcastic", "Witty", "Playful"],
   },
 ];
+
 
 const HomePage = () => {
   const navigate = useNavigate();

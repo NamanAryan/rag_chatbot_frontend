@@ -1,14 +1,13 @@
-// components/Footer.jsx
 import { Link } from "react-router-dom";
 import {
   Sparkles,
   Brain,
-  Palette,
-  Briefcase,
+  GraduationCap,
+  Flame,
   Users,
-  BarChart3,
-  HeartHandshake,
-  Lightbulb,
+  Target,
+  Search,
+  MessageCircle,
 } from "lucide-react";
 
 const Footer = ({
@@ -17,40 +16,40 @@ const Footer = ({
 }) => {
   const defaultPersonalities = [
     {
-      id: "creative",
-      name: "Creative",
-      icon: Palette,
-      color: "from-pink-500 to-rose-600",
+      id: "scholar",
+      name: "Scholar",
+      icon: GraduationCap,
+      color: "from-purple-500 to-indigo-600",
     },
     {
-      id: "professional",
-      name: "Professional",
-      icon: Briefcase,
-      color: "from-blue-500 to-indigo-600",
+      id: "blaze",
+      name: "Blaze",
+      icon: Flame,
+      color: "from-orange-500 to-red-600",
     },
     {
-      id: "friendly",
-      name: "Friendly",
+      id: "buddy",
+      name: "Buddy",
       icon: Users,
       color: "from-green-500 to-emerald-600",
     },
     {
-      id: "analytical",
-      name: "Analytical",
-      icon: BarChart3,
-      color: "from-purple-500 to-violet-600",
+      id: "quest",
+      name: "Quest",
+      icon: Target,
+      color: "from-blue-500 to-cyan-600",
     },
     {
-      id: "supportive",
-      name: "Supportive",
-      icon: HeartHandshake,
-      color: "from-amber-500 to-orange-600",
+      id: "research",
+      name: "Research",
+      icon: Search,
+      color: "from-indigo-500 to-purple-600",
     },
     {
-      id: "innovative",
-      name: "Innovative",
-      icon: Lightbulb,
-      color: "from-cyan-500 to-blue-600",
+      id: "sassy",
+      name: "Sassy",
+      icon: MessageCircle,
+      color: "from-pink-500 to-rose-600",
     },
   ];
 
@@ -65,10 +64,10 @@ const Footer = ({
   ];
 
   const supportLinks = [
-    { path: "/help", label: "Help Center" },
-    { path: "/privacy", label: "Privacy Policy" },
-    { path: "/terms", label: "Terms of Service" },
-    { path: "/feedback", label: "Send Feedback" },
+    { path: "/contact", label: "Help Center" },
+    { path: "/#", label: "Privacy Policy" },
+    { path: "/#", label: "Terms of Service" },
+    { path: "/contact", label: "Send Feedback" },
   ];
 
   return (
@@ -97,8 +96,8 @@ const Footer = ({
               </Link>
               <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md leading-relaxed">
                 Experience conversations with six unique AI personalities, each
-                designed to help you in different ways. From creative
-                brainstorming to professional advice.
+                designed to help you in different ways. From academic mentoring
+                to creative innovation and supportive companionship.
               </p>
               <div className="flex items-center gap-4"></div>
             </div>

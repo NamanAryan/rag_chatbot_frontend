@@ -110,20 +110,18 @@ export default function GoogleLoginPage() {
             AI Assistant
           </h1>
         </div>
-        {isLoggedIn && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="text-slate-600 hover:text-slate-800"
-          >
-            Sign Out
-          </Button>
-        )}
-        <DarkModeToggle />
-      </header>
-
-      <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-88px)]">
+      {isLoggedIn && (
+        <Button
+          className="flex items-center gap-2 text-slate-600 hover:text-slate-800 mr-30" 
+          variant="outline"
+          size="sm"
+          onClick={handleLogout}
+        >
+          Sign Out
+        </Button>
+      )}
+      <DarkModeToggle />
+    </header><main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-88px)]">
         <Card className="w-full max-w-md shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -145,8 +143,7 @@ export default function GoogleLoginPage() {
                   <img
                     src={userData.picture}
                     alt="Profile"
-                    className="rounded-full w-20 h-20 object-cover border-4 border-white shadow-lg"
-                  />
+                    className="rounded-full w-20 h-20 object-cover border-4 border-white shadow-lg" />
                 ) : (
                   <div className="bg-slate-100 border-2 border-dashed border-slate-300 rounded-full w-20 h-20 flex items-center justify-center">
                     <User className="h-10 w-10 text-slate-500" />
@@ -249,5 +246,5 @@ export default function GoogleLoginPage() {
         </Card>
       </main>
     </div>
-  );
-}
+    );
+  }
