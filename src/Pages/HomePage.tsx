@@ -1,7 +1,20 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { GraduationCap, Lightbulb, Users, Target, Search, MessageCircle } from 'lucide-react';
+import {
+  Sparkles,
+  MessageCircle,
+  Brain,
+  GraduationCap,
+  Lightbulb,
+  Search,
+  Target,
+  Users,
+} from "lucide-react";
+import { Button } from "@/components/button";
+import { Card } from "@/components/card";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const PERSONALITIES = [
   {
@@ -66,26 +79,30 @@ const PERSONALITIES = [
   },
 ];
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const [profileImageLoaded, setProfileImageLoaded] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [selectedPersonality, setSelectedPersonality] = useState("sage");
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [profileImageLoaded, setProfileImageLoaded] = useState<boolean>(false);
+  const [, setCurrentTime] = useState<Date>(new Date());
+  const [selectedPersonality, setSelectedPersonality] =
+    useState<string>("scholar");
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer: NodeJS.Timeout = setInterval(
+      () => setCurrentTime(new Date()),
+      1000
+    );
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    // Load saved personality preference
-    const savedPersonality = localStorage.getItem("selectedPersonality");
+    const savedPersonality: string | null = localStorage.getItem(
+      "selectedPersonality"
+    );
     if (savedPersonality) {
       setSelectedPersonality(savedPersonality);
     }
 
-    // Handle profile image loading when user data changes
     if (user?.picture) {
       const img = new Image();
       img.onload = () => setProfileImageLoaded(true);
@@ -94,50 +111,39 @@ const HomePage = () => {
     }
   }, [user]);
 
-  // Handle personality selection
-  const handlePersonalitySelect = (personalityId: string) => {
+  const handlePersonalitySelect = (personalityId: string): void => {
     setSelectedPersonality(personalityId);
     localStorage.setItem("selectedPersonality", personalityId);
     console.log(`Selected personality: ${personalityId}`);
   };
 
-  // Handle logout properly
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Clear personality selection on logout
-      localStorage.removeItem("selectedPersonality");
-      setSelectedPersonality("sage");
-      navigate('/login', { replace: true });
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Force logout even if API fails
-      localStorage.clear();
-      navigate('/login', { replace: true });
-    }
-  };
 
-  const handleStartChat = () => {
-    // Check authentication before navigating to chat
+  const handleStartChat = (): void => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    
-    // Pass selected personality to chat
+
     navigate("/chat", { state: { selectedPersonality } });
   };
 
-  const ProfileAvatar = ({ size = "w-8 h-8", textSize = "text-sm" }) => {
+  interface ProfileAvatarProps {
+    size?: string;
+    textSize?: string;
+  }
+
+  const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
+    size = "w-8 h-8",
+    textSize = "text-sm",
+  }) => {
     if (isLoading) {
       return (
         <div
           className={`${size} bg-slate-200 dark:bg-slate-600 rounded-full animate-pulse`}
-        ></div>
+        />
       );
     }
 
-    // Use user from AuthContext instead of userData
     if (user?.picture && profileImageLoaded) {
       return (
         <img
@@ -149,259 +155,231 @@ const HomePage = () => {
       );
     }
 
+    // Fallback avatar if no image
     return (
       <div
-        className={`${size} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white ${textSize} font-medium shadow-lg`}
+        className={`${size} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold ${textSize}`}
       >
-        {user?.name?.charAt(0)?.toUpperCase() || "U"}
+        {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
       </div>
     );
   };
 
-  // Get current personality data
   const currentPersonality =
-    PERSONALITIES.find((p) => p.id === selectedPersonality) || PERSONALITIES[0];
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+    PERSONALITIES.find((p) => p.id === selectedPersonality) ?? PERSONALITIES[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                NeuraAI
-              </h1>
-            </div>
-            
-            {/* Authentication-aware header */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated && user ? (
-                <>
-                  <div className="flex items-center space-x-3">
-                    <ProfileAvatar />
-                    <div className="hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  Login
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 transition-all duration-500">
+      {/* Enhanced Header */}
+      <Header />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Show different content based on authentication */}
-        {isAuthenticated && user ? (
-          <>
-            {/* Welcome Section */}
-            <div className="text-center mb-12">
-              <div className="mb-6">
-                <ProfileAvatar size="w-20 h-20" textSize="text-2xl" />
+      <main className="container mx-auto px-6 py-16">
+        <div className="max-w-6xl mx-auto">
+          {/* Welcome Section */}
+          <div className="text-center mb-20">
+            <div className="mb-12 relative">
+              {/* Simplified hero icon */}
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg relative overflow-hidden group transition-all duration-300 hover:scale-105">
+                <MessageCircle className="w-10 h-10 text-white z-10 relative" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/5"></div>
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Welcome back, {user.name}!
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300">
-                Ready to continue your AI conversation?
-              </p>
-              <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                {currentTime.toLocaleTimeString()}
+
+              {/* Cleaner animated rings */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="w-28 h-28 border border-slate-200/20 dark:border-slate-700/20 rounded-full animate-spin [animation-duration:25s]"></div>
+                <div className="absolute top-1 left-1 w-26 h-26 border border-slate-300/15 dark:border-slate-600/15 rounded-full animate-spin [animation-duration:20s] [animation-direction:reverse]"></div>
               </div>
             </div>
 
-            {/* Personality Selection */}
-            <div className="mb-8">
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">
-                Choose Your AI Personality
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {PERSONALITIES.map((personality) => (
-                  <div
-                    key={personality.id}
-                    onClick={() => handlePersonalitySelect(personality.id)}
-                    className={`p-6 rounded-xl cursor-pointer transition-all duration-200 transform hover:scale-105 ${
-                      selectedPersonality === personality.id
-                        ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500 shadow-lg'
-                        : 'bg-white dark:bg-slate-800 border-2 border-transparent hover:border-blue-300 shadow-md hover:shadow-lg'
-                    }`}
-                  >
-                    <div className="text-4xl mb-4 text-center">
-                      <personality.icon />
+            {/* Better typography with improved line height and spacing */}
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-slate-800 via-slate-600 to-slate-800 dark:from-white dark:via-slate-200 dark:to-white bg-clip-text text-transparent mb-8 leading-[1.1] tracking-tight">
+              {isAuthenticated && user ? (
+                <>
+                  Welcome back,
+                  <br />
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    {user.name?.split(" ")[0] || "User"}!
+                  </span>
+                </>
+              ) : (
+                <>
+                  Meet Your AI
+                  <br />
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    Personalities
+                  </span>
+                </>
+              )}
+            </h2>
+
+            {/* User Profile Card */}
+            {isAuthenticated && user && (
+              <div className="max-w-md mx-auto mb-12">
+                <Card className="p-6 shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
+                  <div className="flex items-center space-x-4">
+                    <ProfileAvatar size="w-16 h-16" textSize="text-xl" />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                        {user.name}
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {user.email}
+                      </p>
+                      <div className="mt-2">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
+                          ● Online
+                        </span>
+                      </div>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
-                      {personality.name}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-                      {personality.description}
-                    </p>
                   </div>
-                ))}
+                </Card>
               </div>
-            </div>
+            )}
 
-            {/* Current Selection Display */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <span className="text-2xl mr-2"><currentPersonality.icon /></span>
-                <span className="text-blue-800 dark:text-blue-200 font-medium">
-                  Selected: {currentPersonality.name}
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
+              {isAuthenticated
+                ? "Choose from six unique AI personalities, each designed to help you in different ways. Ready to continue our conversation?"
+                : "Choose from six unique AI personalities, each designed to help you in different ways. From creative brainstorming to professional advice, find the perfect companion for your needs."}
+            </p>
+
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                  6 Unique Personalities
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50">
+                <Brain className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                  Advanced AI
                 </span>
               </div>
             </div>
 
-            {/* Start Chat Button */}
-            <div className="text-center">
-              <button
+            {/* ✅ Show different buttons based on authentication */}
+            {isAuthenticated ? (
+              <Button
                 onClick={handleStartChat}
-                className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all"
               >
+                <MessageCircle className="w-5 h-5 mr-2" />
                 Start Chatting with {currentPersonality.name}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Landing Page for Non-Authenticated Users */}
-            <div className="text-center mb-12">
-              <div className="mb-8">
-                <div className="text-6xl mb-4">🧠</div>
-              </div>
-              <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                Welcome to NeuraAI
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                Your intelligent AI companion with multiple personalities. 
-                Experience conversations tailored to your needs with document analysis capabilities.
-              </p>
-              <button
-                onClick={() => navigate('/login')}
-                className="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate("/login")}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all"
               >
                 Get Started
-              </button>
-            </div>
+              </Button>
+            )}
+          </div>
 
-            {/* Features Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-              <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md">
+          {/* Redesigned personality grid with better card design */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+            {PERSONALITIES.map((personality) => {
+              const IconComponent = personality.icon;
+              const isSelected = personality.id === selectedPersonality;
+
+              return (
+                <Card
+                  key={personality.id}
+                  onClick={() => handlePersonalitySelect(personality.id)}
+                  className={`group p-6 cursor-pointer transition-all duration-300 border backdrop-blur-xl relative overflow-hidden hover:shadow-lg ${
+                    isSelected
+                      ? "border-blue-400/40 dark:border-blue-500/40 bg-gradient-to-br from-blue-50/60 via-white/80 to-purple-50/60 dark:from-blue-950/30 dark:via-slate-900/90 dark:to-purple-950/30 shadow-lg ring-2 ring-blue-400/20 dark:ring-blue-500/20"
+                      : "border-slate-200/40 dark:border-slate-700/40 bg-white/80 dark:bg-slate-800/80 hover:border-slate-300/60 dark:hover:border-slate-600/60 hover:bg-white/90 dark:hover:bg-slate-800/90"
+                  }`}
+                >
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-indigo-500/5 dark:from-blue-400/10 dark:via-purple-400/10 dark:to-indigo-400/10"></div>
+                  )}
+
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div
+                      className={`w-16 h-16 bg-gradient-to-br ${personality.color} rounded-2xl flex items-center justify-center mb-4 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl relative overflow-hidden`}
+                    >
+                      <IconComponent className="w-8 h-8 text-white z-10 relative" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10"></div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">
+                      {personality.name}
+                    </h3>
+
+                    <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm leading-relaxed">
+                      {personality.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 justify-center mb-3">
+                      {personality.traits.map((trait, traitIndex) => (
+                        <span
+                          key={traitIndex}
+                          className="px-2.5 py-1 bg-white/60 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium backdrop-blur-sm border border-white/20 dark:border-slate-600/50"
+                        >
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
+
+                    {isSelected && (
+                      <div className="mt-3 w-full">
+                        <div
+                          className={`w-full h-0.5 bg-gradient-to-r ${personality.color} rounded-full shadow-sm`}
+                        ></div>
+                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-2 block">
+                          ✨ Currently Selected
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* ✅ Add features section for non-authenticated users */}
+          {!isAuthenticated && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 mb-20">
+              <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 rounded-xl shadow-md backdrop-blur-sm">
                 <div className="text-4xl mb-4">🧠</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
                   Multiple Personalities
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Choose from different AI personalities to match your needs - from wise sage to creative thinker
+                <p className="text-slate-600 dark:text-slate-400">
+                  Choose from different AI personalities to match your learning
+                  style and needs
                 </p>
               </div>
-              <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md">
+              <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 rounded-xl shadow-md backdrop-blur-sm">
                 <div className="text-4xl mb-4">📄</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
                   Document Analysis
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Upload documents and get intelligent insights with context-aware responses
+                <p className="text-slate-600 dark:text-slate-400">
+                  Upload documents and get intelligent insights with
+                  context-aware responses
                 </p>
               </div>
-              <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md">
+              <div className="text-center p-6 bg-white/60 dark:bg-slate-800/60 rounded-xl shadow-md backdrop-blur-sm">
                 <div className="text-4xl mb-4">💬</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
                   Natural Conversations
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Engage in meaningful conversations with full context awareness and memory
+                <p className="text-slate-600 dark:text-slate-400">
+                  Engage in meaningful conversations with full context awareness
+                  and memory
                 </p>
               </div>
             </div>
+          )}
 
-            {/* Additional Info Section */}
-            <div className="mt-16 text-center">
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                Why Choose NeuraAI?
-              </h3>
-              <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-start space-x-3 p-4">
-                  <div className="text-2xl">✨</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Personalized Experience</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      Each personality offers unique perspectives and communication styles
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-4">
-                  <div className="text-2xl">🔒</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Secure & Private</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      Your conversations and documents are protected with enterprise-grade security
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-4">
-                  <div className="text-2xl">⚡</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Fast & Reliable</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      Powered by cutting-edge AI technology for instant, accurate responses
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-4">
-                  <div className="text-2xl">🎯</div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Context-Aware</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                      Remembers conversation history and understands document context
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            <p>&copy; 2025 NeuraAI. Built with ❤️ for intelligent conversations.</p>
-          </div>
+          {/* Footer */}
+          <Footer />
         </div>
-      </footer>
+      </main>
     </div>
   );
 };

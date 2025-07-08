@@ -64,10 +64,10 @@ const Footer = ({
   ];
 
   const supportLinks = [
-    { path: "/contact", label: "Help Center" },
-    { path: "/#", label: "Privacy Policy" },
-    { path: "/#", label: "Terms of Service" },
-    { path: "/contact", label: "Send Feedback" },
+    { path: "/help", label: "Help Center" },
+    { path: "/privacy", label: "Privacy Policy" },
+    { path: "/terms", label: "Terms of Service" },
+    { path: "/", label: "Send Feedback" },
   ];
 
   return (

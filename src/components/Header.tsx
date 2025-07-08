@@ -4,7 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Sparkles, LogOut, LogIn, Menu, X } from "lucide-react";
 import { Button } from "./button";
 import { DarkModeToggle } from "./DarkModeToggle";
-
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 type UserData = {
   picture: string | undefined;
   name?: string;
@@ -22,6 +23,7 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = ({
+  
   isAuthenticated = false,
   isLoading = false,
   userData = null,
@@ -29,17 +31,25 @@ const Header: React.FC<HeaderProps> = ({
   handleLogin = () => {
     window.location.href = "/login";
   },
-  handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("authToken");
-    window.location.reload();
-  },
 }) => {
+  const { logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authState, setAuthState] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await logout();
+      localStorage.removeItem("selectedPersonality");
+      navigate("/login", { replace: true });
+    } catch (error: unknown) {
+      console.error("Logout failed:", error);
+      localStorage.clear();
+      navigate("/login", { replace: true });
+    }
+  };
 
   useEffect(() => {
     const checkAuth = () => {
@@ -50,7 +60,6 @@ const Header: React.FC<HeaderProps> = ({
 
     checkAuth();
 
-    // Check every second to catch changes
     const interval = setInterval(checkAuth, 1000);
 
     return () => clearInterval(interval);

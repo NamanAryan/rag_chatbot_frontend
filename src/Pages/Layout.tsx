@@ -1,7 +1,7 @@
 // components/Layout.jsx
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
-import Footer from "./Footer";
+import Footer from "../components/Footer";
 
 import type { ReactNode } from "react";
 const BACKEND_URL = import.meta.env.BACKEND_URL;

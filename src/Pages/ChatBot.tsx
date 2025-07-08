@@ -95,7 +95,7 @@ const PERSONALITIES = {
 
 export default function AIChatbotHomepage() {
   const location = useLocation();
-  const { isAuthenticated, user, checkAuth } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<
     Array<{ text: string; isUser: boolean }>
@@ -107,10 +107,8 @@ export default function AIChatbotHomepage() {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeChatId, setActiveChatId] = useState(1);
-  const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  // const [isFileUploading, setIsFileUploading] = useState(false);
   const [hasUploadedFile, setHasUploadedFile] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<
@@ -130,25 +128,11 @@ export default function AIChatbotHomepage() {
     return fromNavigation || fromStorage || "sage";
   });
 
-useEffect(() => {
-    const verifyAccess = async () => {
-      const isValid = await checkAuth();
-      if (!isValid) {
-        navigate('/login', { replace: true });
-      }
-    };
-
-    verifyAccess();
-  }, [checkAuth, navigate]);
-
+ useEffect(() => {
   if (!isAuthenticated || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="ml-4">Verifying access...</p>
-      </div>
-    );
+    navigate('/login', { replace: true });
   }
+}, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -619,6 +603,7 @@ useEffect(() => {
     );
 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const userData = user;
 
     useEffect(() => {
       return () => {
