@@ -8,37 +8,38 @@ import { DarkModeProvider } from "./contexts/DarkModeContext";
 import About from "./Pages/About";
 import Features from "./Pages/Features";
 import Contact from "./Pages/Contact";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export default function App() {
   return (
-    <DarkModeProvider>
-      <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-
-          {/* OAuth callback route */}
-          <Route path="/google" element={<AuthRedirect />} />
-
-          {/* Protected routes */}
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <ChatBot />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Catch-all route - must be last */}
-          <Route path="*" element={<HomePage />} />
-        </Routes>
-      </Router>
-    </DarkModeProvider>
+    <AuthProvider>
+      <DarkModeProvider>
+        <Router>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/google" element={<AuthRedirect />} />
+            
+            {/* Protected routes */}
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <ChatBot />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<HomePage />} />
+          </Routes>
+        </Router>
+      </DarkModeProvider>
+    </AuthProvider>
   );
 }

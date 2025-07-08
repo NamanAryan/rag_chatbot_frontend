@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/button";
+import { useAuth } from '../contexts/AuthContext';
 import { Card } from "@/components/card";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -80,16 +81,10 @@ const PERSONALITIES = [
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<{
-    name: string;
-    email: string;
-    picture?: string;
-  } | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, isLoading } = useAuth(); // ✅ Use AuthContext
   const [profileImageLoaded, setProfileImageLoaded] = useState(false);
   const [, setCurrentTime] = useState(new Date());
-  const [selectedPersonality, setSelectedPersonality] = useState("sage"); // ✅ Add personality selection state
+  const [selectedPersonality, setSelectedPersonality] = useState("sage");
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -97,40 +92,18 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        setIsLoading(true);
-        const user = localStorage.getItem("user");
-        if (user) {
-          const parsedUser = JSON.parse(user);
-          setUserData(parsedUser);
-          setIsAuthenticated(true);
+    const savedPersonality = localStorage.getItem("selectedPersonality");
+    if (savedPersonality) {
+      setSelectedPersonality(savedPersonality);
+    }
+    if (user?.picture) {
+      const img = new Image();
+      img.onload = () => setProfileImageLoaded(true);
+      img.onerror = () => setProfileImageLoaded(false);
+      img.src = user.picture;
+    }
+  }, [user]); 
 
-          if (parsedUser.picture) {
-            const img = new Image();
-            img.onload = () => setProfileImageLoaded(true);
-            img.onerror = () => setProfileImageLoaded(false);
-            img.src = parsedUser.picture;
-          }
-        }
-
-        // ✅ Load saved personality preference
-        const savedPersonality = localStorage.getItem("selectedPersonality");
-        if (savedPersonality) {
-          setSelectedPersonality(savedPersonality);
-        }
-      } catch (err) {
-        console.error("Failed to parse user data");
-        localStorage.removeItem("user");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, []);
-
-  // ✅ Handle personality selection
   const handlePersonalitySelect = (personalityId: string) => {
     setSelectedPersonality(personalityId);
     localStorage.setItem("selectedPersonality", personalityId);
@@ -138,7 +111,10 @@ const HomePage = () => {
   };
 
   const handleStartChat = () => {
-    // ✅ Pass selected personality to chat
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     navigate("/chat", { state: { selectedPersonality } });
   };
 
@@ -151,11 +127,11 @@ const HomePage = () => {
       );
     }
 
-    if (userData?.picture && profileImageLoaded) {
+    if (user?.picture && profileImageLoaded) {
       return (
         <img
-          src={userData.picture}
-          alt={userData.name || "Profile"}
+          src={user.picture}
+          alt={user.name || "Profile"}
           className={`${size} rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-lg`}
           referrerPolicy="no-referrer"
         />
@@ -166,14 +142,22 @@ const HomePage = () => {
       <div
         className={`${size} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white ${textSize} font-medium shadow-lg`}
       >
-        {userData?.name?.charAt(0)?.toUpperCase() || "U"}
+        {user?.name?.charAt(0)?.toUpperCase() || "U"}
       </div>
     );
   };
 
-  // ✅ Get current personality data
   const currentPersonality =
     PERSONALITIES.find((p) => p.id === selectedPersonality) || PERSONALITIES[0];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 transition-all duration-500">
@@ -207,7 +191,7 @@ const HomePage = () => {
                   Welcome back,
                   <br />
                   <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                    {userData?.name?.split(" ")[0] || "User"}!
+                    {user?.name?.split(" ")[0] || "User"}!
                   </span>
                 </>
               ) : (
@@ -222,17 +206,17 @@ const HomePage = () => {
             </h2>
 
             {/* User Profile Card */}
-            {!isLoading && isAuthenticated && userData && (
+            {!isLoading && isAuthenticated && (
               <div className="max-w-md mx-auto mb-12">
                 <Card className="p-6 shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
                   <div className="flex items-center space-x-4">
                     <ProfileAvatar size="w-16 h-16" textSize="text-xl" />
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                        {userData.name}
+                        {user?.name}
                       </h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {userData.email}
+                        {user?.email}
                       </p>
                       <div className="mt-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">

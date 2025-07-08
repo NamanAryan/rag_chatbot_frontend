@@ -19,7 +19,8 @@ import {
   Annoyed,
 } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ChatHistoryItem {
   id: number;
@@ -94,6 +95,8 @@ const PERSONALITIES = {
 
 export default function AIChatbotHomepage() {
   const location = useLocation();
+  const { isAuthenticated, user, checkAuth } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<
     Array<{ text: string; isUser: boolean }>
   >([]);
@@ -126,6 +129,26 @@ export default function AIChatbotHomepage() {
     const fromStorage = localStorage.getItem("selectedPersonality");
     return fromNavigation || fromStorage || "sage";
   });
+
+useEffect(() => {
+    const verifyAccess = async () => {
+      const isValid = await checkAuth();
+      if (!isValid) {
+        navigate('/login', { replace: true });
+      }
+    };
+
+    verifyAccess();
+  }, [checkAuth, navigate]);
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="ml-4">Verifying access...</p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const container = messagesContainerRef.current;

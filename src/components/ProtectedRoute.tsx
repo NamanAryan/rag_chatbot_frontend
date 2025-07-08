@@ -1,6 +1,6 @@
-// components/ProtectedRoute.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 import type { ReactNode } from 'react';
 
@@ -10,45 +10,36 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); 
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading, checkAuth } = useAuth();
+  const [authVerified, setAuthVerified] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/protected', {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-          navigate('/login', { replace: true });
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setIsAuthenticated(false);
+    const verifyAuth = async () => {
+      const isValid = await checkAuth();
+      
+      if (!isValid) {
+        console.log('❌ ProtectedRoute: Authentication failed, redirecting to login');
         navigate('/login', { replace: true });
-      } finally {
-        setIsLoading(false);
+        return;
       }
+      
+      setAuthVerified(true);
     };
+    verifyAuth();
+  }, [checkAuth, navigate]);
 
-    checkAuth();
-  }, [navigate]);
-
-  if (isLoading) {
+  if (isLoading || !authVerified) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="ml-4">Checking authentication...</p>
+        <p className="ml-4">Verifying authentication...</p>
       </div>
     );
   }
-  if (!isAuthenticated) {
-    return null; 
+
+  if (isAuthenticated && authVerified) {
+    return children;
   }
 
-  return children;
+  return null;
 }
