@@ -37,17 +37,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     if (checkingRef.current) {
+      console.log(
+        "🔍 AuthContext: Auth check already in progress, skipping..."
+      );
       return isAuthenticated;
     }
 
     checkingRef.current = true;
 
     try {
-      // Get token from localStorage
+      console.log("🔍 AuthContext: Starting authentication check...");
+
+      // ✅ Get token from localStorage
       const token = localStorage.getItem("authToken");
+      console.log(
+        "🔍 AuthContext: Token from localStorage:",
+        token ? "Found" : "Not found"
+      );
 
       if (!token) {
-        console.log("❌ No token found in localStorage");
+        console.log("❌ AuthContext: No token found in localStorage");
         setUser(null);
         setIsAuthenticated(false);
         return false;
@@ -55,35 +64,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const backendUrl =
         import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
-      const response = await fetch(`${backendUrl}/protected`, {
+      const apiUrl = `${backendUrl}/protected`;
+
+      console.log("🌐 AuthContext: Making request to:", apiUrl);
+      console.log(
+        "🔑 AuthContext: Using token:",
+        token.substring(0, 20) + "..."
+      );
+
+      const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // ✅ Send token in Authorization header
           Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
+      console.log("🔍 AuthContext: Response status:", response.status);
+
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData.user);
-        setIsAuthenticated(true);
-        return true;
+        console.log("✅ AuthContext: Received user data:", userData);
+
+        if (userData.user) {
+          setUser(userData.user);
+          setIsAuthenticated(true);
+          console.log("✅ AuthContext: Successfully set authenticated state");
+          return true;
+        }
       } else {
-        // Token invalid, clear it
-        localStorage.removeItem("authToken");
-        setUser(null);
-        setIsAuthenticated(false);
-        return false;
+        console.log(
+          "❌ AuthContext: Authentication failed with status:",
+          response.status
+        );
+        // If 401, token is invalid - clear it
+        if (response.status === 401) {
+          localStorage.removeItem("authToken");
+        }
       }
+
+      setUser(null);
+      setIsAuthenticated(false);
+      return false;
     } catch (error) {
-      console.error("Auth check failed:", error);
-      localStorage.removeItem("authToken");
+      console.error("❌ AuthContext: Network error:", error);
       setUser(null);
       setIsAuthenticated(false);
       return false;
     } finally {
       setIsLoading(false);
       checkingRef.current = false;
+      console.log("🔧 AuthContext: Finally block completed");
     }
   }, [isAuthenticated]);
 
@@ -92,7 +124,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear localStorage token
       localStorage.removeItem("authToken");
 
-      // Optional: call backend logout (but don't depend on it)
       const backendUrl =
         import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
       await fetch(`${backendUrl}/logout`, {
