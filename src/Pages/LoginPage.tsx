@@ -3,7 +3,7 @@ import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { User, Loader2, Sparkles, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
-
+import { makeAuthenticatedRequest } from "@/contexts/AuthContext";
 export default function GoogleLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function GoogleLoginPage() {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/protected`, {
+      const response = await makeAuthenticatedRequest(`${BACKEND_URL}/protected`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -69,7 +69,7 @@ export default function GoogleLoginPage() {
     setError(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/google/url`);
+      const res = await makeAuthenticatedRequest(`${BACKEND_URL}/auth/google/url`);
       const data = await res.json();
       if (data?.url) {
         console.log("Redirecting to Google login URL:", data.url);
@@ -85,7 +85,7 @@ export default function GoogleLoginPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${BACKEND_URL}/logout`, {
+      await makeAuthenticatedRequest(`${BACKEND_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -28,6 +28,20 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
+export const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem('authToken');
+  
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Accept': 'application/json',
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' })
+    }
+  });
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);

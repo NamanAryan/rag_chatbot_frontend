@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, makeAuthenticatedRequest  } from "@/contexts/AuthContext";
 
 interface ChatHistoryItem {
   id: number;
@@ -188,7 +188,7 @@ export default function AIChatbotHomepage() {
       formData.append("session_id", sessionId!);
       formData.append("personality", selectedPersonality);
 
-      const response = await fetch(`${BACKEND_URL}/upload-file`, {
+      const response = await makeAuthenticatedRequest(`${BACKEND_URL}/upload-file`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -243,7 +243,7 @@ export default function AIChatbotHomepage() {
   const loadUserSessions = async () => {
     try {
       setIsLoadingHistory(true);
-      const response = await fetch(
+      const response = await makeAuthenticatedRequest(
         `${BACKEND_URL}/chat/sessions?personality=${selectedPersonality}`,
         {
           credentials: "include",
@@ -377,7 +377,7 @@ export default function AIChatbotHomepage() {
 
     try {
       console.log("Sending has_file:", hasUploadedFile);
-      const response = await fetch(`${BACKEND_URL}/ask`, {
+      const response = await makeAuthenticatedRequest(`${BACKEND_URL}/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -416,7 +416,7 @@ export default function AIChatbotHomepage() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${BACKEND_URL}/logout`, {
+      await makeAuthenticatedRequest(`${BACKEND_URL}/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -490,7 +490,7 @@ export default function AIChatbotHomepage() {
 
   const loadChatHistory = async (sessionId: string) => {
     try {
-      const response = await fetch(
+      const response = await makeAuthenticatedRequest(
         `${BACKEND_URL}/chat/history?session_id=${sessionId}&personality=${selectedPersonality}`,
         {
           credentials: "include",
