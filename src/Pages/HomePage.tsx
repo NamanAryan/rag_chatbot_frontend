@@ -39,7 +39,7 @@ const PERSONALITIES = [
   },
   {
     id: "buddy",
-    name: "Buddy",
+    name: "Blaze",
     icon: Users,
     description: "Supportive study companion",
     color: "from-emerald-500 to-teal-600",
@@ -253,7 +253,7 @@ const HomePage: React.FC = () => {
               <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50">
                 <Brain className="w-4 h-4 text-blue-500" />
                 <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                  Advanced AI
+                  Gemini AI
                 </span>
               </div>
             </div>

@@ -22,7 +22,7 @@ const About = () => {
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <div className="p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg">
             <Target className="w-12 h-12 text-blue-500 mb-4" />
-            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Our Mission</h3>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Mission</h3>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               To make AI conversations more human, engaging, and tailored to individual needs through distinct personality-driven interactions.
             </p>
@@ -30,7 +30,7 @@ const About = () => {
 
           <div className="p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg">
             <Award className="w-12 h-12 text-purple-500 mb-4" />
-            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Our Vision</h3>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-4">Vision</h3>
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
               To create a world where AI assistants understand context, emotion, and individual preferences to provide truly personalized experiences.
             </p>

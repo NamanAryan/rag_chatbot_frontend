@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { User, Loader2, Sparkles } from "lucide-react";
+import { User, Loader2, Sparkles, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export default function GoogleLoginPage() {
@@ -110,18 +110,19 @@ export default function GoogleLoginPage() {
             AI Assistant
           </h1>
         </div>
-      {isLoggedIn && (
-        <Button
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-800 mr-30" 
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-        >
-          Sign Out
-        </Button>
-      )}
-      <DarkModeToggle />
-    </header><main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-88px)]">
+        {isLoggedIn && (
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className=" ml-330 flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50 hover:bg-red-50/80 dark:hover:bg-red-900/30 hover:border-red-200 dark:hover:border-red-700 hover:text-red-600 dark:hover:text-red-400 transition-all shadow-sm"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline text-sm font-medium">Logout</span>
+          </Button>
+        )}
+        <DarkModeToggle />
+      </header>
+      <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-88px)]">
         <Card className="w-full max-w-md shadow-lg border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -143,7 +144,8 @@ export default function GoogleLoginPage() {
                   <img
                     src={userData.picture}
                     alt="Profile"
-                    className="rounded-full w-20 h-20 object-cover border-4 border-white shadow-lg" />
+                    className="rounded-full w-20 h-20 object-cover border-4 border-white shadow-lg"
+                  />
                 ) : (
                   <div className="bg-slate-100 border-2 border-dashed border-slate-300 rounded-full w-20 h-20 flex items-center justify-center">
                     <User className="h-10 w-10 text-slate-500" />
@@ -246,5 +248,5 @@ export default function GoogleLoginPage() {
         </Card>
       </main>
     </div>
-    );
-  }
+  );
+}

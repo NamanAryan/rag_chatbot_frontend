@@ -1,13 +1,13 @@
 // pages/Features.jsx
 import Layout from './Layout';
-import { Brain, MessageCircle, Palette, Briefcase, Heart, Lightbulb, Shield, Zap } from 'lucide-react';
+import { Brain, MessageCircle, Lightbulb, Shield, Zap } from 'lucide-react';
 
 const Features = () => {
   const features = [
     {
       icon: Brain,
       title: "Six Unique Personalities",
-      description: "Choose from Creative, Professional, Friendly, Analytical, Supportive, and Innovative AI personalities.",
+      description: "Choose from Scholar, Blaze, Buddy, Quest, Research, and Sassy AI personalities.",
       color: "from-blue-500 to-purple-600"
     },
     {
@@ -64,30 +64,6 @@ const Features = () => {
               </div>
             );
           })}
-        </div>
-
-        {/* Personality Showcase */}
-        <div className="p-8 bg-gradient-to-br from-blue-50/60 via-white/80 to-purple-50/60 dark:from-blue-950/30 dark:via-slate-900/90 dark:to-purple-950/30 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg">
-          <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-6 text-center">
-            Meet Your AI Personalities
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <Palette className="w-12 h-12 text-pink-500 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">Creative</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Perfect for brainstorming and artistic projects</p>
-            </div>
-            <div className="text-center">
-              <Briefcase className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">Professional</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Ideal for business and formal communications</p>
-            </div>
-            <div className="text-center">
-              <Heart className="w-12 h-12 text-red-500 mx-auto mb-3" />
-              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">Supportive</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Great for encouragement and emotional support</p>
-            </div>
-          </div>
         </div>
       </div>
     </Layout>

@@ -186,7 +186,7 @@ const Footer = ({
               </div>
 
               <div className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                v2.1.0
+                v1.0.0
               </div>
             </div>
           </div>
