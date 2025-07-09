@@ -1,43 +1,49 @@
-import { useEffect, useState } from 'react';
+// In your AuthRedirect component (the /google route)
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AuthRedirect() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState('Processing authentication...');
+  const { checkAuth } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Add a small delay to ensure cookie is set
-        await new Promise(resolve => setTimeout(resolve, 500));
+    const handleAuthSuccess = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      
+      if (token) {
+        // Store token in localStorage
+        localStorage.setItem('authToken', token);
+        console.log('✅ Token stored in localStorage');
         
-        setStatus('Verifying credentials...');
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
         
-        const response = await fetch('/protected', {
-          credentials: 'include'
-        });
+        // Check authentication
+        const isAuthenticated = await checkAuth();
         
-        if (response.ok) {
-          setStatus('✅ Authentication successful! Redirecting...');
-          setTimeout(() => navigate('/login'), 1000);
+        if (isAuthenticated) {
+          console.log('✅ Authentication successful');
+          navigate('/', { replace: true });
         } else {
-          setStatus('❌ Authentication failed. Redirecting to login...');
-          setTimeout(() => navigate('/login'), 2000);
+          console.log('❌ Authentication failed');
+          navigate('/login?error=token_invalid', { replace: true });
         }
-      } catch (error) {
-        setStatus('❌ Authentication error. Redirecting to login...');
-        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        console.log('❌ No token in URL');
+        navigate('/login?error=no_token', { replace: true });
       }
     };
 
-    checkAuth();
-  }, [navigate]);
+    handleAuthSuccess();
+  }, [checkAuth, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p>{status}</p>
+        <p className="text-lg text-gray-600">Completing authentication...</p>
       </div>
     </div>
   );
