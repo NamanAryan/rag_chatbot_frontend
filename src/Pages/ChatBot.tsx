@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth, makeAuthenticatedRequest  } from "@/contexts/AuthContext";
+import { useAuth, makeAuthenticatedRequest } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
 
 interface ChatHistoryItem {
   id: number;
@@ -28,6 +29,11 @@ interface ChatHistoryItem {
   lastMessage: string;
   timestamp: string;
   session_id: string;
+}
+export interface message {
+  text: string;
+  isUser: boolean;
+  isNewMessage?: boolean;
 }
 
 const PERSONALITIES = {
@@ -81,7 +87,7 @@ const PERSONALITIES = {
       "You are Research, a meticulous fact-finder. Help students with citations, source evaluation, and detailed information gathering. Be precise and thorough in academic research.",
     shortDescription: "Fact-finder, citation helper",
   },
-  SaltyGPT : {
+  SaltyGPT: {
     name: "SaltyGPT ",
     icon: Annoyed,
     color: "from-pink-500 to-rose-600",
@@ -100,10 +106,12 @@ export default function AIChatbotHomepage() {
   const [messages, setMessages] = useState<
     Array<{ text: string; isUser: boolean }>
   >([]);
+  const [, setLastMessageCount] = useState(0);
+  const [lastAnimatedIndex, setLastAnimatedIndex] = useState<number>(-1);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const [typingText, setTypingText] = useState("");
+  const [, setTypingText] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [activeChatId, setActiveChatId] = useState(1);
@@ -114,7 +122,7 @@ export default function AIChatbotHomepage() {
   const [uploadStatus, setUploadStatus] = useState<
     "initial" | "uploading" | "success" | "fail"
   >("initial");
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const [shouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showUploadAlert, setShowUploadAlert] = useState(false);
@@ -128,33 +136,11 @@ export default function AIChatbotHomepage() {
     return fromNavigation || fromStorage || "sage";
   });
 
- useEffect(() => {
-  if (!isAuthenticated || !user) {
-    navigate('/login', { replace: true });
-  }
-}, [isAuthenticated, user, navigate]);
-
   useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    let timeoutId: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        const { scrollTop, scrollHeight, clientHeight } = container;
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-        setShouldAutoScroll(isAtBottom);
-      }, 100);
-    };
-
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeoutId);
-    };
-  }, []);
+    if (!isAuthenticated || !user) {
+      navigate("/login", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -188,11 +174,14 @@ export default function AIChatbotHomepage() {
       formData.append("session_id", sessionId!);
       formData.append("personality", selectedPersonality);
 
-      const response = await makeAuthenticatedRequest(`${BACKEND_URL}/upload-file`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
+      const response = await makeAuthenticatedRequest(
+        `${BACKEND_URL}/upload-file`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         setUploadStatus("success");
@@ -230,7 +219,27 @@ export default function AIChatbotHomepage() {
     PERSONALITIES.scholar;
   const PersonalityIcon = currentPersonality.icon;
 
-  // Initialize with personality greeting
+  useEffect(() => {
+    setLastMessageCount(messages.length);
+  }, [messages]);
+
+  useEffect(() => {
+    const personality =
+      PERSONALITIES[selectedPersonality as keyof typeof PERSONALITIES];
+    if (personality) {
+      console.log(
+        `🎭 Setting greeting for ${selectedPersonality}:`,
+        personality.greeting
+      );
+      setMessages([
+        {
+          text: personality.greeting,
+          isUser: false,
+        },
+      ]);
+    }
+  }, [selectedPersonality]);
+
   useEffect(() => {
     setMessages([
       {
@@ -240,18 +249,20 @@ export default function AIChatbotHomepage() {
     ]);
   }, [selectedPersonality]);
 
-  const loadUserSessions = async () => {
+  const loadUserSessionsForPersonality = async (personality: string) => {
     try {
       setIsLoadingHistory(true);
+      console.log(`🔍 Loading sessions for personality: ${personality}`);
+
       const response = await makeAuthenticatedRequest(
-        `${BACKEND_URL}/chat/sessions?personality=${selectedPersonality}`,
-        {
-          credentials: "include",
-        }
+        `${BACKEND_URL}/chat/sessions?personality=${personality}`,
+        { credentials: "include" }
       );
 
       if (response.ok) {
         const data = await response.json();
+        console.log(`📊 Sessions loaded for ${personality}:`, data);
+
         const formattedSessions: ChatHistoryItem[] = data.sessions.map(
           (session: any, index: number) => ({
             id: index + 1,
@@ -273,82 +284,57 @@ export default function AIChatbotHomepage() {
   };
 
   useEffect(() => {
-    loadUserSessions();
+    loadUserSessionsForPersonality(selectedPersonality);
   }, [selectedPersonality]);
 
-  const animateTyping = (text: string) => {
-    const words = text.split(" ");
-    let currentWordIndex = 0;
+  const displayMessage = (text: string) => {
+    setIsTyping(false);
     setTypingText("");
 
-    const interval = setInterval(() => {
-      if (currentWordIndex < words.length) {
-        setTypingText((prev) => {
-          const newText = prev + (prev ? " " : "") + words[currentWordIndex];
+    setMessages((prev) => {
+      const newMessages = [...prev, { text, isUser: false }];
+      setLastAnimatedIndex(newMessages.length - 1);
+      return newMessages;
+    });
 
-          // Only scroll every 5 words if auto-scroll is enabled, and don't force it
-          if (
-            shouldAutoScroll &&
-            currentWordIndex % 5 === 0 &&
-            messagesEndRef.current
-          ) {
-            messagesEndRef.current?.scrollIntoView({
-              behavior: "smooth",
-              block: "end",
-            });
-          }
+    setTimeout(() => {
+      setLastAnimatedIndex(-1);
+    }, 500);
 
-          return newText;
+    if (shouldAutoScroll && messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
         });
-        currentWordIndex++;
-      } else {
-        clearInterval(interval);
-        setIsTyping(false);
-        setTypingText("");
-        setMessages((prev) => [...prev, { text, isUser: false }]);
-        if (shouldAutoScroll && messagesEndRef.current) {
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({
-              behavior: "smooth",
-              block: "end",
-            });
-          }, 100);
-        }
-      }
-    }, 50);
+      }, 100);
+    }
   };
 
   const TypingIndicator = () => (
-    <div className="flex gap-3 justify-start">
+    <div className="flex gap-3 justify-start animate-pulse">
       <div
         className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center flex-shrink-0`}
       >
         <PersonalityIcon className="w-4 h-4 text-white" />
       </div>
       <div className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs md:max-w-md lg:max-w-lg">
-        {typingText ? (
-          <p className="text-sm leading-relaxed">
-            {typingText}
-            <span className="inline-block w-2 h-4 bg-slate-400 dark:bg-slate-500 ml-1 animate-pulse"></span>
-          </p>
-        ) : (
-          <div className="flex items-center space-x-1">
-            <div className="flex space-x-1">
-              <div
-                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                style={{ animationDelay: "0ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                style={{ animationDelay: "150ms" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                style={{ animationDelay: "300ms" }}
-              ></div>
-            </div>
+        <div className="flex items-center space-x-1">
+          <div className="flex space-x-1">
+            <div
+              className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -358,14 +344,12 @@ export default function AIChatbotHomepage() {
 
     const userMessage = input.trim();
 
-    // Generate session ID if needed
     let sessionId = currentSessionId;
     if (!sessionId) {
       sessionId = crypto.randomUUID();
       setCurrentSessionId(sessionId);
     }
 
-    // Add user message only once
     setMessages((prev) => [...prev, { text: userMessage, isUser: true }]);
     setInput("");
     setIsTyping(true);
@@ -396,10 +380,10 @@ export default function AIChatbotHomepage() {
 
       if (response.ok) {
         const data = await response.json();
-        animateTyping(data.answer);
-        await loadUserSessions();
+        displayMessage(data.answer);
+        await loadUserSessionsForPersonality(selectedPersonality);
       } else {
-        animateTyping("Sorry, I encountered an error. Please try again.");
+        displayMessage("Sorry, I encountered an error. Please try again.");
       }
     } catch (error) {
       setIsTyping(false);
@@ -488,13 +472,18 @@ export default function AIChatbotHomepage() {
     if (!config) return null;
   };
 
-  const loadChatHistory = async (sessionId: string) => {
+  const loadChatHistory = async (
+    sessionId: string,
+    selectedPersonality?: any
+  ) => {
     try {
+      console.log(
+        `🔍 Loading chat history for session: ${sessionId}, personality: ${selectedPersonality}`
+      );
+
       const response = await makeAuthenticatedRequest(
         `${BACKEND_URL}/chat/history?session_id=${sessionId}&personality=${selectedPersonality}`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
 
       if (!response.ok) {
@@ -502,11 +491,14 @@ export default function AIChatbotHomepage() {
       }
 
       const data = await response.json();
+      console.log(`📖 Raw chat history data:`, data);
+
       const formattedMessages = data.messages.map((msg: any) => ({
         text: msg.message,
         isUser: msg.is_user,
       }));
 
+      console.log(`📝 Formatted messages:`, formattedMessages);
       return formattedMessages;
     } catch (error) {
       console.error("Error loading chat history:", error);
@@ -515,15 +507,29 @@ export default function AIChatbotHomepage() {
   };
 
   const handleChatSelect = async (chatId: number) => {
+    console.log(`🎯 handleChatSelect called with chatId: ${chatId}`);
+    console.log(`🎭 Current personality: ${selectedPersonality}`);
+
     setActiveChatId(chatId);
 
     const selectedChat = chatHistory.find((chat) => chat.id === chatId);
     if (selectedChat && selectedChat.session_id) {
       try {
-        const historyMessages = await loadChatHistory(selectedChat.session_id);
+        console.log(
+          `📚 Loading history for session: ${selectedChat.session_id}`
+        );
+        const historyMessages = await loadChatHistory(
+          selectedChat.session_id,
+          selectedPersonality
+        );
+
+        console.log(`📖 Loaded messages:`, historyMessages);
+
         if (historyMessages.length > 0) {
+          console.log(`🔄 Setting messages from history`);
           setMessages(historyMessages);
         } else {
+          console.log(`🎭 Setting personality greeting`);
           setMessages([
             {
               text: currentPersonality.greeting,
@@ -598,9 +604,7 @@ export default function AIChatbotHomepage() {
   // Personality Dropdown Component
   const PersonalityDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [, setDropdownPosition] = useState<"left" | "right">(
-      "right"
-    );
+    const [, setDropdownPosition] = useState<"left" | "right">("right");
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const userData = user;
@@ -626,22 +630,46 @@ export default function AIChatbotHomepage() {
       }
     }, [isOpen]);
 
-    const handlePersonalityChange = (personalityId: string) => {
+    const handlePersonalityChange = async (personalityId: string) => {
+      console.log(
+        `🔄 Switching from ${selectedPersonality} to ${personalityId}`
+      );
+
+      // Clear existing state
+      setMessages([]);
+      setChatHistory([]);
+      setCurrentSessionId(null);
+      setActiveChatId(0);
+
+      // Update personality
       setSelectedPersonality(personalityId);
       localStorage.setItem("selectedPersonality", personalityId);
       setIsOpen(false);
 
-      setMessages([
-        {
-          text: PERSONALITIES[personalityId as keyof typeof PERSONALITIES]
-            .greeting,
-          isUser: false,
-        },
-      ]);
+      // Set new personality greeting
+      const newPersonality =
+        PERSONALITIES[personalityId as keyof typeof PERSONALITIES];
+      if (newPersonality) {
+        setMessages([
+          {
+            text: newPersonality.greeting,
+            isUser: false,
+          },
+        ]);
+      }
+      await loadUserSessionsForPersonality();
+    };
 
-      setCurrentSessionId(null);
-      setActiveChatId(0);
-      loadUserSessions();
+    const loadUserSessionsForPersonality = async () => {
+      try {
+        setIsLoadingHistory(true);
+        // ... rest of the logic
+      } catch (error) {
+        console.error("Failed to load user sessions:", error);
+        setChatHistory([]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
     };
 
     return (
@@ -897,51 +925,58 @@ export default function AIChatbotHomepage() {
                   ref={messagesContainerRef}
                   className="flex-1 overflow-y-auto p-4 space-y-4"
                 >
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex gap-3 ${
-                        message.isUser ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      {!message.isUser && (
-                        <div
-                          className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center flex-shrink-0`}
-                        >
-                          <PersonalityIcon className="w-4 h-4 text-white" />
-                        </div>
-                      )}
+                  {messages.map((message, index) => {
+                    const shouldAnimate = index === lastAnimatedIndex;
 
-                      <div
-                        className={`max-w-xs md:max-w-md lg:max-w-lg rounded-2xl px-4 py-3 ${
-                          message.isUser
-                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-tr-sm"
-                            : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm"
+                    return (
+                      <motion.div
+                        key={`message-${index}`}
+                        initial={shouldAnimate ? { opacity: 0, y: -20 } : false}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className={`flex gap-3 ${
+                          message.isUser ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {message.text || "No content"}
-                        </p>
-                      </div>
+                        {!message.isUser && (
+                          <div
+                            className={`w-8 h-8 bg-gradient-to-br ${currentPersonality.color} rounded-full flex items-center justify-center flex-shrink-0`}
+                          >
+                            <PersonalityIcon className="w-4 h-4 text-white" />
+                          </div>
+                        )}
 
-                      {message.isUser && (
-                        <div className="w-8 h-8 flex-shrink-0">
-                          {userData?.picture ? (
-                            <img
-                              src={userData.picture}
-                              alt="You"
-                              className="w-8 h-8 rounded-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                            </div>
-                          )}
+                        <div
+                          className={`max-w-xs md:max-w-md lg:max-w-lg rounded-2xl px-4 py-3 ${
+                            message.isUser
+                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-tr-sm"
+                              : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm"
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {message.text || "No content"}
+                          </p>
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {message.isUser && (
+                          <div className="w-8 h-8 flex-shrink-0">
+                            {userData?.picture ? (
+                              <img
+                                src={userData.picture}
+                                alt="You"
+                                className="w-8 h-8 rounded-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                                <User className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
 
                   {isTyping && <TypingIndicator />}
                   <div
